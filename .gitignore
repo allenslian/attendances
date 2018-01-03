@@ -1,0 +1,11 @@
+# folders
+.vs/
+**/bin/Debug/
+**/bin/Release/
+**/bin/
+**/obj/
+packages/
+
+# file type
+*.suo
+*.user

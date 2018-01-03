@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ZKTeco", "ZKTeco", "{40060896-37B7-4F37-8748-BD7928AE27D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Attendances.ZKTecoBackendService", "src\zkteco\Attendances.ZKTecoBackendService\Attendances.ZKTecoBackendService.csproj", "{2D4D606B-81A6-4F26-9C21-4678DA0EE97D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2D4D606B-81A6-4F26-9C21-4678DA0EE97D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D4D606B-81A6-4F26-9C21-4678DA0EE97D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D4D606B-81A6-4F26-9C21-4678DA0EE97D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D4D606B-81A6-4F26-9C21-4678DA0EE97D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2D4D606B-81A6-4F26-9C21-4678DA0EE97D} = {40060896-37B7-4F37-8748-BD7928AE27D5}
+	EndGlobalSection
+EndGlobal

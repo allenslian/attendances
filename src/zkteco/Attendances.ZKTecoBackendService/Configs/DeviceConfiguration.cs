@@ -1,7 +1,7 @@
-﻿using Attendances.BackendService.Models;
+﻿using Attendances.ZKTecoBackendService.Models;
 using System.Configuration;
 
-namespace Attendances.BackendService.Configs
+namespace Attendances.ZKTecoBackendService.Configs
 {
     public class DeviceConfiguration : ConfigurationElement
     {
@@ -18,8 +18,8 @@ namespace Attendances.BackendService.Configs
             IsKey = true)]
         public string IP
         {
-            get { return (string)this["ip"]; }
-            set { this["ip"] = value; }
+            get { return (string)base["ip"]; }
+            set { base["ip"] = value; }
         }
 
         [ConfigurationProperty("port",
@@ -27,16 +27,16 @@ namespace Attendances.BackendService.Configs
             IsRequired = false)]
         public int Port
         {
-            get { return (int)this["port"]; }
-            set { this["port"] = value; }
+            get { return (int)base["port"]; }
+            set { base["port"] = value; }
         }
 
         [ConfigurationProperty("type",
             IsRequired = true)]
         public DeviceType Type
         {
-            get { return (DeviceType)this["type"]; }
-            set { this["type"] = value; }
+            get { return (DeviceType)base["type"]; }
+            set { base["type"] = value; }
         }
     }
 }

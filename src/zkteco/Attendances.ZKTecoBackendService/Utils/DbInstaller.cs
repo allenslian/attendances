@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SQLite;
+﻿using System.Data.SQLite;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Attendances.ZKTecoBackendService.Utils
 {
@@ -97,8 +92,9 @@ namespace Attendances.ZKTecoBackendService.Utils
         {
             var sql = @"CREATE TABLE IF NOT EXISTS queue(
                             id TEXT PRIMARY KEY,
-                            refer_id INT NOT NULL,
+                            refer_id TEXT NOT NULL,
                             message TEXT NOT NULL,
+                            event_type INT NOT NULL,
                             create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                         );";
             command.CommandText = sql;
@@ -109,7 +105,7 @@ namespace Attendances.ZKTecoBackendService.Utils
         private static void CreateAttendanceLogTable(SQLiteCommand command)
         {
             var sql = @"CREATE TABLE IF NOT EXISTS attendance_logs(
-                            id INT PRIMARY KEY,
+                            id TEXT PRIMARY KEY,
                             machine_id INT NOT NULL,
                             enroll_number  TEXT NOT NULL,
                             project_id     TEXT NOT NULL,
@@ -137,7 +133,7 @@ namespace Attendances.ZKTecoBackendService.Utils
         {
             var sql = @"CREATE TABLE IF NOT EXISTS attendance_logs_archive(
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            refer_no    INT NOT NULL,
+                            refer_no    TEXT NOT NULL,
                             machine_id INT NOT NULL,
                             enroll_number  TEXT NOT NULL,
                             project_id     TEXT NOT NULL,

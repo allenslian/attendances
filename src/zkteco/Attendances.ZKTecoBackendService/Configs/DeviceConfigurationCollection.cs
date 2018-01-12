@@ -1,6 +1,6 @@
 ﻿using System.Configuration;
 
-namespace Attendances.BackendService.Configs
+namespace Attendances.ZKTecoBackendService.Configs
 {
     public class DeviceConfigurationCollection : ConfigurationElementCollection
     {

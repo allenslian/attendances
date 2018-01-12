@@ -1,11 +1,8 @@
-﻿using Attendances.BackendService.Configs;
+﻿using Attendances.ZKTecoBackendService.Configs;
 using Attendances.ZKTecoBackendService.Models;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Attendances.ZKTecoBackendService.Utils
 {
@@ -42,19 +39,19 @@ namespace Attendances.ZKTecoBackendService.Utils
             }
         }
 
-        private static int _retryTimes = -1;
+        private static int _maxRetryTimes = -1;
         /// <summary>
         /// How many times does it retries when some errors occur.
         /// </summary>
-        public static int RetryTimes
+        public static int MaxRetryTimes
         {
             get
             {
-                if (_retryTimes < 0)
+                if (_maxRetryTimes < 0)
                 {
-                    _retryTimes = GetValue("RetryTime", 3);
+                    _maxRetryTimes = ReadValueFromConfig("MaxRetryTimes", 3);
                 }
-                return _retryTimes;
+                return _maxRetryTimes;
             }
         }
 
@@ -68,7 +65,7 @@ namespace Attendances.ZKTecoBackendService.Utils
             {
                 if (_apiRootUrl == null)
                 {
-                    var api = GetValue("ApiRootUrl");
+                    var api = ReadValueFromConfig("ApiRootUrl");
                     if (!api.EndsWith("/"))
                     {
                         api += "/";
@@ -87,7 +84,7 @@ namespace Attendances.ZKTecoBackendService.Utils
             {
                 if (_apiToken == null)
                 {
-                    _apiToken = GetValue("ApiToken");
+                    _apiToken = ReadValueFromConfig("ApiToken");
                 }
                 return _apiToken;
             }
@@ -103,7 +100,7 @@ namespace Attendances.ZKTecoBackendService.Utils
             {
                 if (_projectCode == null)
                 {
-                    _projectCode = GetValue("ProjectCode");
+                    _projectCode = ReadValueFromConfig("ProjectCode");
                 }
                 return _projectCode;
             }
@@ -120,9 +117,37 @@ namespace Attendances.ZKTecoBackendService.Utils
             {
                 if (_appRootFolder == null)
                 {
-                    _appRootFolder = GetValue("AppRootFolder", AppDomain.CurrentDomain.BaseDirectory);
+                    _appRootFolder = ReadValueFromConfig("AppRootFolder", AppDomain.CurrentDomain.BaseDirectory);
                 }
                 return _appRootFolder;
+            }
+        }
+
+        private static double _minWorkingHours = -1;
+
+        public static double MinWorkingHours
+        {
+            get
+            {
+                if (_minWorkingHours < 0)
+                {
+                    _minWorkingHours = ReadValueFromConfig("MinWorkingHours", 0.5);
+                }
+                return _minWorkingHours;
+            }
+        }
+
+        private static double _maxWorkingHours = -1;
+
+        public static double MaxWorkingHours
+        {
+            get
+            {
+                if (_maxWorkingHours < 0)
+                {
+                    _maxWorkingHours = ReadValueFromConfig("MaxWorkingHours", 16.0);
+                }
+                return _maxWorkingHours;
             }
         }
 
@@ -133,7 +158,7 @@ namespace Attendances.ZKTecoBackendService.Utils
         /// <param name="key"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
-        private static int GetValue(string key, int defaultValue)
+        private static int ReadValueFromConfig(string key, int defaultValue)
         {
             var value = ConfigurationManager.AppSettings[key];
             int result;
@@ -150,7 +175,7 @@ namespace Attendances.ZKTecoBackendService.Utils
         /// <param name="key"></param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
-        private static string GetValue(string key, string defaultValue = "")
+        private static string ReadValueFromConfig(string key, string defaultValue = "")
         {
             var value = ConfigurationManager.AppSettings[key];
             if (string.IsNullOrWhiteSpace(value))
@@ -164,6 +189,16 @@ namespace Attendances.ZKTecoBackendService.Utils
             return value;
         }
 
+        private static double ReadValueFromConfig(string key, double defaultValue)
+        {
+            var value = ConfigurationManager.AppSettings[key];
+            double result;
+            if (double.TryParse(value, out result))
+            {
+                return Math.Round(result, 2);
+            }
+            return Math.Round(defaultValue, 2);
+        }
         #endregion
     }
 }

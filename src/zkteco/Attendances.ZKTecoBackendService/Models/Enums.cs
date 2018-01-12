@@ -1,4 +1,4 @@
-﻿namespace Attendances.BackendService.Models
+﻿namespace Attendances.ZKTecoBackendService.Models
 {
     /// <summary>
     /// It describes one device is checkin, checkout or checkin&checkout.
@@ -35,5 +35,22 @@
         /// Check out from door
         /// </summary>
         CheckOut = -1,
+    }
+
+    public enum EventType
+    {
+        AttTransactionEx = 1,
+        Finger,
+        NewUser,
+        EnrollFingerEx,
+        Verify,
+        FingerFeature,
+        Door,
+        Alarm,
+        HIDNum,
+        WriteCard,
+        EmptyCard,
+        DeleteTemplate,
+        Failed
     }
 }

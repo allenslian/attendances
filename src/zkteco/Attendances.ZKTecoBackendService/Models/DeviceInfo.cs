@@ -1,6 +1,4 @@
-﻿using Attendances.BackendService.Models;
-
-namespace Attendances.ZKTecoBackendService.Models
+﻿namespace Attendances.ZKTecoBackendService.Models
 {
     /// <summary>
     /// Device's information from configuration file.
@@ -10,8 +8,8 @@ namespace Attendances.ZKTecoBackendService.Models
         public DeviceInfo(string deviceName, string ip, 
             int port, DeviceType type)
         {
-            DeviceName = deviceName;
-            IP = ip;
+            DeviceName = deviceName == null ? "" : deviceName.Replace("\"", "");
+            IP = ip == null ? "" : ip.Replace("\"", "");
             Port = port;
             Type = type;
         }

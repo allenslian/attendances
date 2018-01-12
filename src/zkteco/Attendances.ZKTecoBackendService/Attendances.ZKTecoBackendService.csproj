@@ -162,6 +162,7 @@
     <Compile Include="Handlers\UploadAttendanceHandler.cs" />
     <Compile Include="Interfaces\IEventHandler.cs" />
     <Compile Include="Interfaces\IIdentityKey.cs" />
+    <Compile Include="Interfaces\IWebApiConnector.cs" />
     <Compile Include="Models\AttendanceLog.cs" />
     <Compile Include="Models\DeviceInfo.cs" />
     <Compile Include="Models\DTOs.cs" />
@@ -172,6 +173,7 @@
     <Compile Include="Utils\DbInstaller.cs" />
     <Compile Include="Utils\DLLInstaller.cs" />
     <Compile Include="Utils\GlobalConfig.cs" />
+    <Compile Include="Utils\JsonSerializer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

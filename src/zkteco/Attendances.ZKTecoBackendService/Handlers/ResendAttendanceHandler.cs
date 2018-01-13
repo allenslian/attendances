@@ -32,7 +32,7 @@ namespace Attendances.ZKTecoBackendService.Handlers
                 return;
             }
 
-            var attendances = GetUnhandledAttendances();
+            var attendances = GetFailedAttendances();
             foreach (var attendance in attendances)
             {
                 var workerId = Bundle.GetCurrentWorkerId(attendance.UserId, attendance.ProjectId);
@@ -59,11 +59,11 @@ namespace Attendances.ZKTecoBackendService.Handlers
             Interlocked.CompareExchange(ref _running, 0, 1);
         }
 
-        private List<AttendanceLog> GetUnhandledAttendances()
+        private List<AttendanceLog> GetFailedAttendances()
         {
             var reader = Bundle.Database.QuerySet(
                 @"SELECT id,enroll_number,state,mode,log_date,work_code,machine_id,project_id,ifnull(device_name,''), 
-                    ifnull(device_type,0), log_status FROM attendance_logs WHERE sync=-1;", null);
+                    ifnull(device_type,0), log_status FROM attendance_logs WHERE sync=0;", null);
             var results = new List<AttendanceLog>();
             while (reader.Read())
             {

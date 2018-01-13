@@ -40,6 +40,10 @@ namespace Attendances.ZKTecoBackendService.Connectors
             {
                 UploadAttendanceLogSuccess(attendance.Id);
             }
+            else
+            {
+                UploadAttendanceLogFailed(attendance.Id);
+            }
         }
 
         public void CheckOutToCTMS(AttendanceLog attendance, string workerId)
@@ -49,6 +53,10 @@ namespace Attendances.ZKTecoBackendService.Connectors
             if (ok)
             {
                 UploadAttendanceLogSuccess(attendance.Id);
+            }
+            else
+            {
+                UploadAttendanceLogFailed(attendance.Id);
             }
         }
 
@@ -82,12 +90,22 @@ namespace Attendances.ZKTecoBackendService.Connectors
 
         private void UploadAttendanceLogSuccess(string id)
         {
+            ChangeAttendanceLogStatus(id, true);
+        }
+
+        private void UploadAttendanceLogFailed(string id)
+        {
+            ChangeAttendanceLogStatus(id, false);
+        }
+
+        private void ChangeAttendanceLogStatus(string id, bool ok)
+        {
             Database.Execute(
                 "UPDATE attendance_logs SET sync=@sync,change_at=datetime('now') WHERE id=@id;",
                 new Dictionary<string, object>
                 {
                     { "@id", id },
-                    { "@sync", 1 }
+                    { "@sync", ok ? 1 : 0 }
                 });
         }
 

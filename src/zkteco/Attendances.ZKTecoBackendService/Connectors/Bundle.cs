@@ -1,11 +1,12 @@
-﻿using Attendances.ZKTecoBackendService.Models;
+﻿using Attendances.ZKTecoBackendService.Interfaces;
+using Attendances.ZKTecoBackendService.Models;
 using System.Collections.Generic;
 
 namespace Attendances.ZKTecoBackendService.Connectors
 {
     public class Bundle
     {
-        public Bundle(SqliteConnector db, WebApiConnector api)
+        public Bundle(SqliteConnector db, IWebApiConnector api)
         {
             Database = db;
             WebApi = api;
@@ -13,7 +14,7 @@ namespace Attendances.ZKTecoBackendService.Connectors
 
         public SqliteConnector Database { get; private set; }
 
-        public WebApiConnector WebApi { get; private set; }
+        public IWebApiConnector WebApi { get; private set; }
 
         public string GetCurrentWorkerId(string enrollNumber, string projectId)
         {

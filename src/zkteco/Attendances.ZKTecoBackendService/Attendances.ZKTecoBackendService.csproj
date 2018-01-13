@@ -155,6 +155,7 @@
     <Compile Include="Connectors\SqliteConnector.cs" />
     <Compile Include="Connectors\WebApiConnector.cs" />
     <Compile Include="Devices\ZktecoDevice.cs" />
+    <Compile Include="Errors\FailedHandleException.cs" />
     <Compile Include="Events\EventHub.cs" />
     <Compile Include="Events\EventMessage.cs" />
     <Compile Include="Handlers\FailedMessageHandler.cs" />

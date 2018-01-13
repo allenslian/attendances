@@ -7,6 +7,7 @@ using Topshelf.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Attendances.ZKTecoBackendService.Errors;
 
 namespace Attendances.ZKTecoBackendService.Events
 {
@@ -126,9 +127,17 @@ namespace Attendances.ZKTecoBackendService.Events
                         {
                             h.Handle(msg);
                         }
-                        catch(Exception ex)
+                        catch(FailedHandleException ex)
                         {
-                            Logger.ErrorFormat("Invoking handler error:{@ex}.", ex);
+                            Logger.ErrorFormat("Invoking handler error[FailedHandleException]:{@ex}.", ex);
+                            var message = new EventMessage(EventType.Failed, ex.Argument);
+                            PublishAsync(message);
+                            Logger.DebugFormat("Failed message: {@msg}.", message);
+                            continue;
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.ErrorFormat("Invoking handler error[Exception]:{@ex}.", ex);
                             var message = new EventMessage(EventType.Failed,
                                 new ArgumentItem(h.HandlerKey, new ArgumentItem.ArgumentValuePair("Message", msg)));
                             PublishAsync(message);

@@ -28,7 +28,9 @@ namespace Attendances.ZKTecoBackendService.Events
         public EventType Kind { get; private set; }
 
         public string Id { get; private set; }
-
+        /// <summary>
+        /// If its Kind is Failed, this ReferenceId will be handler type full name.
+        /// </summary>
         public string ReferenceId { get; private set; }
 
         public IIdentityKey Data { get; private set; }

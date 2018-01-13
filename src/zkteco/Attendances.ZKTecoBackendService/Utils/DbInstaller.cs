@@ -118,7 +118,7 @@ namespace Attendances.ZKTecoBackendService.Utils
                             log_status     INT NOT NULL,
                             create_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                             change_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                            sync           NUMERIC  NOT NULL
+                            sync           INT  NOT NULL
                         );";
             command.CommandText = sql;
             command.CommandType = System.Data.CommandType.Text;

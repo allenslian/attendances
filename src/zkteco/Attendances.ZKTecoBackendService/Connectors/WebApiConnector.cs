@@ -1,4 +1,5 @@
-﻿using Attendances.ZKTecoBackendService.Models;
+﻿using Attendances.ZKTecoBackendService.Interfaces;
+using Attendances.ZKTecoBackendService.Models;
 using Attendances.ZKTecoBackendService.Utils;
 using RestSharp;
 using System;
@@ -8,7 +9,7 @@ using Topshelf.Logging;
 
 namespace Attendances.ZKTecoBackendService.Connectors
 {
-    public class WebApiConnector
+    public class WebApiConnector : IWebApiConnector
     {
         private RestClient Client { get; set; }
 
@@ -31,37 +32,51 @@ namespace Attendances.ZKTecoBackendService.Connectors
         public async Task<string> FindProjectWorkerByFaceId(string faceId, string projectId)
         {
             var request = new RestRequest(string.Format("projects/{0}/workers/{1}", projectId, faceId));
-            try
+
+            Logger.Debug("Invoking FindProjectWorkerByFaceId starts...");
+            var response = await Client.ExecuteGetTaskAsync(request);
+            if (!response.IsSuccessful)
             {
-                Logger.Debug("Invoking FindProjectWorkerByFaceId starts...");
-                var worker = await Client.GetTaskAsync<WorkerDTO>(request);
-                Logger.Debug("Invoking FindProjectWorkerByFaceId ends.");
-                if (worker != null)
+                if (response.ErrorException != null)
                 {
-                    return worker.UserId;
+                    Logger.ErrorFormat("FindProjectWorkerByFaceId error: {0}", response.ErrorMessage);
+                    throw response.ErrorException;
                 }
+                else
+                {
+                    Logger.ErrorFormat("FindProjectWorkerByFaceId error: {0}", response.Content);
+                    throw new WebException(response.StatusDescription);
+                }                
             }
-            catch (Exception ex)
+
+            Logger.Debug("Invoking FindProjectWorkerByFaceId ends.");
+            var worker = Newtonsoft.Json.JsonConvert.DeserializeObject<WorkerDTO>(response.Content);
+            if (worker != null)
             {
-                Logger.ErrorFormat("FindProjectWorkerByFaceId error: {@ex}", ex);
-                throw;
+                return worker.UserId;
             }
-            return await Task.FromResult("");
+            return string.Empty;
         }
 
         public async Task<bool> CheckIn(string projectId, string workerId, DateTime logDate, string location)
         {
             var request = new RestRequest("attendances/in");
-            request.AddObject(new CheckInDTO(projectId, workerId, location, logDate));
-            try
+            request.JsonSerializer = JsonSerializer.Default;
+            request.AddJsonBody(new CheckInDTO(projectId, workerId, location, logDate));
+
+            Logger.Debug("Invoking CheckIn starts...");
+            var response = await Client.ExecutePostTaskAsync(request);
+            Logger.Debug("Invoking CheckIn ends.");
+            if (!response.IsSuccessful)
             {
-                Logger.Debug("Invoking CheckIn starts...");
-                await Client.ExecutePostTaskAsync(request);
-                Logger.Debug("Invoking CheckIn ends.");
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorFormat("CheckIn error: {@ex}", ex);
+                if (response.ErrorException != null)
+                {
+                    Logger.ErrorFormat("CheckIn error: {0}", response.ErrorMessage);
+                }
+                else
+                {
+                    Logger.ErrorFormat("CheckIn error: {0}", response.Content);
+                }                    
                 return false;
             }
             return true;
@@ -70,16 +85,22 @@ namespace Attendances.ZKTecoBackendService.Connectors
         public async Task<bool> CheckOut(string projectId, string workerId, DateTime logDate)
         {
             var request = new RestRequest("attendances/out");
-            request.AddObject(new CheckOutDTO(projectId, workerId, logDate));
-            try
+            request.JsonSerializer = JsonSerializer.Default;
+            request.AddJsonBody(new CheckOutDTO(projectId, workerId, logDate));
+
+            Logger.Debug("Invoking CheckOut starts...");
+            var response = await Client.ExecutePostTaskAsync(request);
+            Logger.Debug("Invoking CheckOut ends.");
+            if (!response.IsSuccessful)
             {
-                Logger.Debug("Invoking CheckOut starts...");
-                await Client.ExecutePostTaskAsync(request);
-                Logger.Debug("Invoking CheckOut ends.");
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorFormat("CheckOut error: {@ex}", ex);
+                if (response.ErrorException != null)
+                {
+                    Logger.ErrorFormat("CheckOut error: {0}", response.ErrorMessage);
+                }
+                else
+                {
+                    Logger.ErrorFormat("CheckOut error: {0}", response.Content);
+                }                    
                 return false;
             }
             return true;

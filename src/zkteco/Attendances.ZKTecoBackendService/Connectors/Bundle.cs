@@ -1,11 +1,12 @@
-﻿using Attendances.ZKTecoBackendService.Models;
+﻿using Attendances.ZKTecoBackendService.Interfaces;
+using Attendances.ZKTecoBackendService.Models;
 using System.Collections.Generic;
 
 namespace Attendances.ZKTecoBackendService.Connectors
 {
     public class Bundle
     {
-        public Bundle(SqliteConnector db, WebApiConnector api)
+        public Bundle(SqliteConnector db, IWebApiConnector api)
         {
             Database = db;
             WebApi = api;
@@ -13,7 +14,7 @@ namespace Attendances.ZKTecoBackendService.Connectors
 
         public SqliteConnector Database { get; private set; }
 
-        public WebApiConnector WebApi { get; private set; }
+        public IWebApiConnector WebApi { get; private set; }
 
         public string GetCurrentWorkerId(string enrollNumber, string projectId)
         {
@@ -40,6 +41,10 @@ namespace Attendances.ZKTecoBackendService.Connectors
             {
                 UploadAttendanceLogSuccess(attendance.Id);
             }
+            else
+            {
+                UploadAttendanceLogFailed(attendance.Id);
+            }
         }
 
         public void CheckOutToCTMS(AttendanceLog attendance, string workerId)
@@ -49,6 +54,10 @@ namespace Attendances.ZKTecoBackendService.Connectors
             if (ok)
             {
                 UploadAttendanceLogSuccess(attendance.Id);
+            }
+            else
+            {
+                UploadAttendanceLogFailed(attendance.Id);
             }
         }
 
@@ -82,12 +91,22 @@ namespace Attendances.ZKTecoBackendService.Connectors
 
         private void UploadAttendanceLogSuccess(string id)
         {
+            ChangeAttendanceLogStatus(id, true);
+        }
+
+        private void UploadAttendanceLogFailed(string id)
+        {
+            ChangeAttendanceLogStatus(id, false);
+        }
+
+        private void ChangeAttendanceLogStatus(string id, bool ok)
+        {
             Database.Execute(
                 "UPDATE attendance_logs SET sync=@sync,change_at=datetime('now') WHERE id=@id;",
                 new Dictionary<string, object>
                 {
                     { "@id", id },
-                    { "@sync", 1 }
+                    { "@sync", ok ? 1 : 0 }
                 });
         }
 

@@ -55,6 +55,7 @@ namespace Attendances.ZKTecoBackendService.Utils
                 var command = new SQLiteCommand(connection);
                 CreateUserMapTable(command);
                 CreateQueueTable(command);
+                CreateFailedQueueTable(command);
                 CreateAttendanceLogTable(command);
                 CreateAttendanceLogArchiveTable(command);
 
@@ -102,6 +103,20 @@ namespace Attendances.ZKTecoBackendService.Utils
             command.ExecuteNonQuery();
         }
 
+        private static void CreateFailedQueueTable(SQLiteCommand command)
+        {
+            var sql = @"CREATE TABLE IF NOT EXISTS failed_queue(
+                            id TEXT PRIMARY KEY,
+                            refer_id TEXT NOT NULL,
+                            message TEXT NOT NULL,
+                            retry_times INT NOT NULL,
+                            create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        );";
+            command.CommandText = sql;
+            command.CommandType = System.Data.CommandType.Text;
+            command.ExecuteNonQuery();
+        }
+
         private static void CreateAttendanceLogTable(SQLiteCommand command)
         {
             var sql = @"CREATE TABLE IF NOT EXISTS attendance_logs(
@@ -118,7 +133,7 @@ namespace Attendances.ZKTecoBackendService.Utils
                             log_status     INT NOT NULL,
                             create_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                             change_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                            sync           NUMERIC  NOT NULL
+                            sync           INT  NOT NULL
                         );";
             command.CommandText = sql;
             command.CommandType = System.Data.CommandType.Text;

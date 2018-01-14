@@ -1,4 +1,5 @@
 ﻿using Attendances.ZKTecoBackendService.Interfaces;
+using Attendances.ZKTecoBackendService.Utils;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,29 +8,51 @@ namespace Attendances.ZKTecoBackendService.Models
 {
     public class ArgumentItem : IIdentityKey
     {
-        private List<ArgumentValuePair> _pairs;
+        /// <summary>
+        /// For serializer
+        /// </summary>
+        public ArgumentItem() { }
 
         public ArgumentItem(string id, params ArgumentValuePair[] pairs)
         {
             Id = id;
-
-            _pairs = new List<ArgumentValuePair>(10);
-            _pairs.AddRange(pairs);
+            Count = 0;
+            Pairs = new List<ArgumentValuePair>(10);
+            Pairs.AddRange(pairs);
         }
 
-        public string Id { get; private set; }        
+        public string Id { get; set; }
 
-        public object this[string name]
+        public int Count { get; set; }
+
+        public List<ArgumentValuePair> Pairs { get; set; }
+
+        public string this[string name]
         {
             get
             {
-                var found = _pairs.FirstOrDefault(p => p.Key == name);
+                var found = Pairs.FirstOrDefault(p => p.Key == name);
                 if (found == null)
                 {
                     return null;
                 }
                 return found.Value;
             }
+        }
+
+        /// <summary>
+        /// increase try times, when reaching max value, it will return false.
+        /// </summary>
+        /// <returns></returns>
+        public bool IncreaseFailedCount()
+        {
+            ++Count;
+
+            if (GlobalConfig.MaxRetryTimes <= Count)
+            {
+                return false;
+            }
+            return true;
         }
 
         public class ArgumentValuePair

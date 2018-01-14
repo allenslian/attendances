@@ -1,9 +1,11 @@
-﻿using RestSharp.Deserializers;
+﻿using Newtonsoft.Json;
+using RestSharp.Deserializers;
 using RestSharp.Serializers;
 using System;
 
 namespace Attendances.ZKTecoBackendService.Models
 {
+    [JsonObject]
     public class WorkerDTO
     {
         public WorkerDTO() { }
@@ -23,12 +25,13 @@ namespace Attendances.ZKTecoBackendService.Models
 
         public string EnrollNumber { get; private set; }
 
-        [DeserializeAs(Name = "_id")]
+        [JsonProperty(PropertyName = "_id")]
         public string UserId { get; private set; }
 
         public string ProjectId { get; private set; }
     }
 
+    [JsonObject]
     public class CheckInDTO
     {
         public CheckInDTO(string projectId, string workerId, string location, DateTime logDate)
@@ -39,19 +42,20 @@ namespace Attendances.ZKTecoBackendService.Models
             CheckInDate = logDate.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ");
         }
 
-        [SerializeAs(Name = "pid")]
+        [JsonProperty(PropertyName = "pid")]
         public string ProjectId { get; private set; }
 
-        [SerializeAs(Name = "wid")]
+        [JsonProperty(PropertyName = "wid")]
         public string WorkerId { get; private set; }
 
-        [SerializeAs(Name = "loc")]
+        [JsonProperty(PropertyName = "loc")]
         public string Location { get; private set; }
 
-        [SerializeAs(Name = "in")]
+        [JsonProperty(PropertyName = "in")]
         public string CheckInDate { get; private set; }
     }
 
+    [JsonObject]
     public class CheckOutDTO
     {
         public CheckOutDTO(string projectId, string workerId, DateTime logDate)
@@ -61,13 +65,13 @@ namespace Attendances.ZKTecoBackendService.Models
             CheckOutDate = logDate.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ");
         }
 
-        [SerializeAs(Name = "pid")]
+        [JsonProperty(PropertyName = "pid")]
         public string ProjectId { get; private set; }
 
-        [SerializeAs(Name = "wid")]
+        [JsonProperty(PropertyName = "wid")]
         public string WorkerId { get; private set; }
 
-        [SerializeAs(Name = "out")]
+        [JsonProperty(PropertyName = "out")]
         public string CheckOutDate { get; private set; }
     }
 

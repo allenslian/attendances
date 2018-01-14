@@ -16,34 +16,42 @@ namespace Attendances.ZKTecoFixtures
     {
         private ILogger _logger;
 
+        private Mock<IWebApiConnector> mock;
+
         [TestInitialize]
         public void InitDatabase()
         {
             DbInstaller.Install();
 
-            _logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+            _logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.File("./log.txt").CreateLogger();
+            HostLogger.UseLogger(new SerilogLogWriterFactory.SerilogHostLoggerConfigurator(_logger));
+
+            mock = new Mock<IWebApiConnector>();
+            mock.Setup(api => api.FindProjectWorkerByFaceId("2", GlobalConfig.ProjectCode)).ReturnsAsync("2222222");
+            mock.Setup(api => api.CheckIn(GlobalConfig.ProjectCode, "2222222", new DateTime(2018, 1, 13, 8, 11, 30), "gate01")).ReturnsAsync(true);
+            mock.Setup(api => api.CheckIn(GlobalConfig.ProjectCode, "2222222", new DateTime(2018, 1, 13, 12, 11, 30), "gate01")).ReturnsAsync(false);
+            mock.Setup(api => api.CheckOut(GlobalConfig.ProjectCode, "2222222", new DateTime(2018, 1, 13, 10, 11, 30))).ReturnsAsync(true);
+            mock.Setup(api => api.CheckOut(GlobalConfig.ProjectCode, "2222222", new DateTime(2018, 1, 13, 14, 11, 30))).ReturnsAsync(false);
         }
 
         [TestMethod]
         public void TestCurrentWorkerIdFound()
         {
-            var bundle = new Bundle(new SqliteConnector(), new WebApiConnector());
-            var workerId = bundle.GetCurrentWorkerId("1", GlobalConfig.ProjectCode);
+            var bundle = new Bundle(new SqliteConnector(), mock.Object);
+            var workerId = bundle.GetCurrentWorkerId("2", GlobalConfig.ProjectCode);
             Assert.IsTrue(workerId.Length > 0);
+            Assert.IsTrue(workerId == "2222222");
         }
 
         [TestMethod]
         public void TestCheckInToCTMSSuccess()
-        {
-            HostLogger.UseLogger(new SerilogLogWriterFactory.SerilogHostLoggerConfigurator(_logger));
-
-            var mockApi = new Mock<IWebApiConnector>();
-            mockApi.Setup(api => api.CheckIn(GlobalConfig.ProjectCode, "123", new DateTime(2018, 1, 13, 8, 11, 30), "gate01")).ReturnsAsync(true);
-
-            var attendance = new AttendanceLog("1", 1, 1, 2018, 1, 13, 8, 11, 30, 1, 1, "gate01", DeviceType.In);
-            var bundle = new Bundle(new SqliteConnector(), mockApi.Object);
+        {           
+            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 8, 11, 30, 1, 1, "gate01", DeviceType.In);
+            var bundle = new Bundle(new SqliteConnector(), mock.Object);
             SaveAttendanceLog(bundle, attendance);
-            bundle.CheckInToCTMS(attendance, "123");
+            bundle.CheckInToCTMS(attendance, "2222222");
             var sync = bundle.Database.QueryScalar("select sync from attendance_logs where id=@id;",
                 new Dictionary<string, object>
                 {
@@ -54,16 +62,11 @@ namespace Attendances.ZKTecoFixtures
 
         [TestMethod]
         public void TestCheckInToCTMSFailed()
-        {
-            HostLogger.UseLogger(new SerilogLogWriterFactory.SerilogHostLoggerConfigurator(_logger));
-
-            var mockApi = new Mock<IWebApiConnector>();
-            mockApi.Setup(api => api.CheckIn(GlobalConfig.ProjectCode, "123", new DateTime(2018, 1, 13, 8, 11, 30), "gate01")).ReturnsAsync(false);
-
-            var attendance = new AttendanceLog("1", 1, 1, 2018, 1, 13, 8, 11, 30, 1, 1, "gate01", DeviceType.In);
-            var bundle = new Bundle(new SqliteConnector(), mockApi.Object);
+        {           
+            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 12, 11, 30, 1, 1, "gate01", DeviceType.In);
+            var bundle = new Bundle(new SqliteConnector(), mock.Object);
             SaveAttendanceLog(bundle, attendance);
-            bundle.CheckInToCTMS(attendance, "123");
+            bundle.CheckInToCTMS(attendance, "2222222");
             var sync = bundle.Database.QueryScalar("select sync from attendance_logs where id=@id;",
                 new Dictionary<string, object>
                 {
@@ -75,15 +78,10 @@ namespace Attendances.ZKTecoFixtures
         [TestMethod]
         public void TestCheckOutToCTMSSuccess()
         {
-            HostLogger.UseLogger(new SerilogLogWriterFactory.SerilogHostLoggerConfigurator(_logger));
-
-            var mockApi = new Mock<IWebApiConnector>();
-            mockApi.Setup(api => api.CheckOut(GlobalConfig.ProjectCode, "123", new DateTime(2018, 1, 13, 10, 11, 30))).ReturnsAsync(true);
-
-            var attendance = new AttendanceLog("1", 1, 1, 2018, 1, 13, 10, 11, 30, 1, 1, "gate01", DeviceType.Out);
-            var bundle = new Bundle(new SqliteConnector(), mockApi.Object);
+            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 10, 11, 30, 1, 1, "gate01", DeviceType.Out);
+            var bundle = new Bundle(new SqliteConnector(), mock.Object);
             SaveAttendanceLog(bundle, attendance);
-            bundle.CheckOutToCTMS(attendance, "123");
+            bundle.CheckOutToCTMS(attendance, "2222222");
             var sync = bundle.Database.QueryScalar("select sync from attendance_logs where id=@id;",
                 new Dictionary<string, object>
                 {
@@ -95,15 +93,10 @@ namespace Attendances.ZKTecoFixtures
         [TestMethod]
         public void TestCheckOutToCTMSFailed()
         {
-            HostLogger.UseLogger(new SerilogLogWriterFactory.SerilogHostLoggerConfigurator(_logger));
-
-            var mockApi = new Mock<IWebApiConnector>();
-            mockApi.Setup(api => api.CheckOut(GlobalConfig.ProjectCode, "123", new DateTime(2018, 1, 13, 10, 11, 30))).ReturnsAsync(false);
-
-            var attendance = new AttendanceLog("1", 1, 1, 2018, 1, 13, 10, 11, 30, 1, 1, "gate01", DeviceType.Out);
-            var bundle = new Bundle(new SqliteConnector(), mockApi.Object);
+            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 14, 11, 30, 1, 1, "gate01", DeviceType.Out);
+            var bundle = new Bundle(new SqliteConnector(), mock.Object);
             SaveAttendanceLog(bundle, attendance);
-            bundle.CheckOutToCTMS(attendance, "123");
+            bundle.CheckOutToCTMS(attendance, "2222222");
             var sync = bundle.Database.QueryScalar("select sync from attendance_logs where id=@id;",
                 new Dictionary<string, object>
                 {

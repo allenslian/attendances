@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 
 namespace Attendances.ZKTecoBackendService.Handlers
 {
+    [Obsolete]
     public class FailedMessageHandler : IEventHandler
     {
         private Bundle Bundle { get; set; }
@@ -38,7 +39,7 @@ namespace Attendances.ZKTecoBackendService.Handlers
                 return;
             }
 
-            var data = msg.Data as ArgumentItem;
+            var data = JsonConvert.DeserializeObject<ArgumentItem>(msg.JsonData);
             if (data == null)
             {
                 Logger.Debug("FailedMessageHandler.Handle Data type is not ArgumentItem.");
@@ -62,6 +63,7 @@ namespace Attendances.ZKTecoBackendService.Handlers
                 return;
             }
 
+            Logger.Debug("Creating handler instance.");
             var handler = Activator.CreateInstance(Type.GetType(msg.ReferenceId, false, false), new[] {Bundle}) as IEventHandler;
             if (handler == null)
             {

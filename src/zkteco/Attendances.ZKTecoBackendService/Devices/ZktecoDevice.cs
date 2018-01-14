@@ -56,7 +56,7 @@ namespace Attendances.ZKTecoBackendService.Devices
         {
             Device = device;            
 
-            Timer = new System.Timers.Timer(1000);
+            Timer = new System.Timers.Timer(10000);
             Timer.Elapsed += OnReadAttendances;
 
             Signal = new ManualResetEvent(false);
@@ -90,9 +90,9 @@ namespace Attendances.ZKTecoBackendService.Devices
 
         public DeviceType DeviceType { get; private set; }
 
-        public void StartAsync()
+        public Task StartAsync()
         {
-            Task.Run(() =>
+            return Task.Run(() =>
             {
                 Logger.Debug("ZKtecoDevice StartAsync is starting...");
                 while (!Connnect())

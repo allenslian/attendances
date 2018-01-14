@@ -36,19 +36,18 @@ namespace Attendances.ZKTecoBackendService
 
                     //Retry to send failed attendance logs.
                     x.UseQuartzNinject();
+
                     x.ScheduleQuartzJob(q =>
                     {
                         q.WithJob(() =>
                         {
-                            return JobBuilder.Create<ResendAttendanceHandler>().WithIdentity("retryJob", "syncbackend")
-                            .Build();
+                            return JobBuilder.Create<ResendAttendanceHandler>().WithIdentity("retryJob", "syncbackend").Build();
                         }).AddTrigger(() =>
                         {
                             return TriggerBuilder.Create().WithIdentity("retryTrigger", "syncbackend")
-                            .StartNow().WithSimpleSchedule(b => b.WithIntervalInHours(1).RepeatForever())
-                            .Build();
-                        });
-                    });
+                            .StartNow().WithSimpleSchedule(b => b.WithIntervalInMinutes(5).RepeatForever()).Build();
+                        });                        
+                    });                    
                 });
 
                 cfg.RunAsLocalService();

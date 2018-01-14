@@ -6,7 +6,12 @@ using System;
 namespace Attendances.ZKTecoBackendService.Events
 {
     public class EventMessage
-    {     
+    {
+        /// <summary>
+        /// For deserialize
+        /// </summary>
+        public EventMessage() { }
+
         public EventMessage(EventType kind, IIdentityKey data)
         {
             Id = Guid.NewGuid().ToString();
@@ -16,34 +21,78 @@ namespace Attendances.ZKTecoBackendService.Events
             OccurredOn = DateTime.UtcNow;
         }
 
+        /// <summary>
+        /// It is used for initializing event message.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="kind"></param>
+        /// <param name="referId"></param>
+        /// <param name="json"></param>
+        /// <param name="occurredOn"></param>
         public EventMessage(string id, EventType kind, string referId, string json, DateTime occurredOn)
         {
             Id = id;
             Kind = kind;
             ReferenceId = referId;
-            Data = JsonConvert.DeserializeObject<IIdentityKey>(json);
+            JsonData = json;
             OccurredOn = occurredOn;
         }
 
-        public EventType Kind { get; private set; }
+        /// <summary>
+        /// It is used for initializing failed message.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="referId"></param>
+        /// <param name="json"></param>
+        /// <param name="occurredOn"></param>
+        /// <param name="retryTimes"></param>
+        public EventMessage(string id, string referId, string json, DateTime occurredOn, int retryTimes)
+        {
+            Id = id;
+            Kind = EventType.Failed;
+            ReferenceId = referId;
+            JsonData = json;
+            OccurredOn = occurredOn;
+            RetryTimes = retryTimes;
+        }
 
-        public string Id { get; private set; }
+        public EventType Kind { get; set; }
+
+        public string Id { get; set; }
         /// <summary>
         /// If its Kind is Failed, this ReferenceId will be handler type full name.
         /// </summary>
-        public string ReferenceId { get; private set; }
+        public string ReferenceId { get; set; }
 
-        public IIdentityKey Data { get; private set; }
+        public IIdentityKey Data { get; set; }
 
-        public DateTime OccurredOn { get; private set; }
-
-        public override string ToString()
+        private string _json;
+        /// <summary>
+        /// Data property's json format
+        /// </summary>
+        public string JsonData
         {
-            if (null == Data)
+            get
             {
-                return string.Empty;
+                if (_json == null)
+                {
+                    if (Data == null)
+                    {
+                        _json = string.Empty;
+                    }
+                    else
+                    {
+                        _json = JsonConvert.SerializeObject(Data);
+                    }
+                }
+                return _json;
             }
-            return JsonConvert.SerializeObject(Data);
+
+            set { _json = value; }
         }
+
+        public DateTime OccurredOn { get; set; }
+
+        public int RetryTimes { get; set; }
     }
 }

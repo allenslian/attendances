@@ -34,8 +34,9 @@ namespace Attendances.ZKTecoBackendService
 
             try
             {
-                RegisterAndStartDevices();
                 SubscribeEventHandlers();
+
+                RegisterAndStartDevices();                
             }
             catch (Exception ex)
             {
@@ -78,7 +79,7 @@ namespace Attendances.ZKTecoBackendService
         private void SubscribeEventHandlers()
         {
             Hub.Subscribe(Models.EventType.AttTransactionEx, new UploadAttendanceHandler(Bundle));
-            Hub.Subscribe(Models.EventType.Failed, new FailedMessageHandler(Bundle));
+            //Hub.Subscribe(Models.EventType.Failed, new FailedMessageHandler(Bundle));
         }
     }
 }

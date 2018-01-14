@@ -45,14 +45,13 @@ namespace Attendances.ZKTecoBackendService.Events
             Subscribers = new ConcurrentDictionary<EventType, List<IEventHandler>>();
             Logger = HostLogger.Get<EventHub>();
             
-            Timer = new System.Timers.Timer(1000);
+            Timer = new System.Timers.Timer(10000);
             Timer.Elapsed += OnHandleEventMessages;
-            Timer.Start();
         }        
 
-        public void PublishAsync(EventMessage msg)
+        public Task PublishAsync(EventMessage msg)
         {
-            Task.Run(() => {
+            return Task.Run(() => {
                 if (msg == null)
                 {
                     return;
@@ -60,20 +59,21 @@ namespace Attendances.ZKTecoBackendService.Events
 
                 try
                 {
-                    Database.Execute(
-                        "INSERT INTO queue(id, refer_id, message, event_type, create_at) VALUES(@id, @refer_id, @message, @event_type, @create_at);",
-                        new Dictionary<string, object> {
-                            { "@id", msg.Id },
-                            { "@refer_id", msg.ReferenceId },
-                            { "@message", msg.ToString() },
-                            { "@event_type", (int)msg.Kind },
-                            { "@create_at", msg.OccurredOn }
-                        });                    
+                    if (msg.Kind != EventType.Failed)
+                    {
+                        EnqueueMessageQueue(msg);
+                    }
+                    else
+                    {
+                        EnqueueFailedQueue(msg);
+                    }
                 }
                 catch (Exception ex)
                 {
                     Logger.ErrorFormat("PublishAsync error: {@error}.", ex);
-                }                
+                }
+
+                Timer.Start();
             });                      
         }
 
@@ -84,7 +84,7 @@ namespace Attendances.ZKTecoBackendService.Events
                 throw new ArgumentNullException("handler");
             }
 
-            Subscribers.AddOrUpdate(kind, new List<IEventHandler>(10), (key, list) =>
+            Subscribers.AddOrUpdate(kind, new List<IEventHandler>(10) { handler }, (key, list) =>
             {
                 var index = list.FindIndex(m => m == handler);
                 if (index == -1)
@@ -96,24 +96,24 @@ namespace Attendances.ZKTecoBackendService.Events
         }
 
         private void OnHandleEventMessages(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            Logger.DebugFormat("OnHandleEventMessages starts on the thread({threadid}).", Thread.CurrentThread.ManagedThreadId);
-
+        {           
             if (Interlocked.CompareExchange(ref _running, 1, 0) != 0)
             {
                 Logger.DebugFormat("OnHandleEventMessages is running. Current Thread[{thread}]", Thread.CurrentThread.ManagedThreadId);
                 return;
             }
 
+            Logger.DebugFormat("OnHandleEventMessages starts on the thread({threadid}).", Thread.CurrentThread.ManagedThreadId);
+
             var target = (System.Timers.Timer)sender;
-            if (target.Enabled == false)
+            if (!target.Enabled)
             {
                 Logger.Debug("EventHub's timer has stopped.");
                 return;
             }
 
-            Logger.Info("EventHub's timer stops.");
-            target.Stop();
+            Logger.Debug("EventHub's timer stops.");
+            target.Stop();                       
 
             var messages = GetPendingMessages();
             foreach (var msg in messages)
@@ -125,16 +125,17 @@ namespace Attendances.ZKTecoBackendService.Events
                     {
                         try
                         {
+                            Logger.DebugFormat("Executing the {handler}.", h.GetType().FullName);
                             h.Handle(msg);
                         }
-                        catch(FailedHandleException ex)
-                        {
-                            Logger.ErrorFormat("Invoking handler error[FailedHandleException]:{@ex}.", ex);
-                            var message = new EventMessage(EventType.Failed, ex.Argument);
-                            PublishAsync(message);
-                            Logger.DebugFormat("Failed message: {@msg}.", message);
-                            continue;
-                        }
+                        //catch(FailedHandleException ex)
+                        //{
+                        //    Logger.ErrorFormat("Invoking handler error[FailedHandleException]:{@ex}.", ex);
+                        //    var message = new EventMessage(EventType.Failed, ex.Argument);
+                        //    PublishAsync(message);
+                        //    Logger.DebugFormat("Failed message: {@msg}.", message);
+                        //    continue;
+                        //}
                         catch (Exception ex)
                         {
                             Logger.ErrorFormat("Invoking handler error[Exception]:{@ex}.", ex);
@@ -146,16 +147,41 @@ namespace Attendances.ZKTecoBackendService.Events
                         }
                     }
                     Logger.DebugFormat("Destroy message({id}).", msg.Id);
-                    Destroy(msg.Id);
+                    DestroyMessage(msg.Id);
                 }
             }
 
             Interlocked.CompareExchange(ref _running, 0, 1);
 
-            Logger.Info("EventHub's timer starts again.");
+            Logger.Debug("EventHub's timer starts again.");
             target.Start();
 
             Logger.DebugFormat("OnHandleEventMessages ends on the thread({threadid}).", Thread.CurrentThread.ManagedThreadId);
+        }
+
+        private void EnqueueMessageQueue(EventMessage msg)
+        {
+            Database.Execute(
+                "INSERT INTO queue(id, refer_id, message, event_type, create_at) VALUES(@id, @refer_id, @message, @event_type, @create_at);",
+                new Dictionary<string, object> {
+                    { "@id", msg.Id },
+                    { "@refer_id", msg.ReferenceId },
+                    { "@message", msg.JsonData },
+                    { "@event_type", (int)msg.Kind },
+                    { "@create_at", msg.OccurredOn }
+                });
+        }
+
+        private void EnqueueFailedQueue(EventMessage msg)
+        {
+            Database.Execute(
+                "INSERT INTO failed_queue(id, refer_id, message, create_at, retry_times) VALUES(@id, @refer_id, @message, @create_at, 0);",
+                new Dictionary<string, object> {
+                    { "@id", msg.Id },
+                    { "@refer_id", msg.ReferenceId },
+                    { "@message", msg.JsonData },
+                    { "@create_at", msg.OccurredOn }
+                });
         }
 
         /// <summary>
@@ -182,7 +208,7 @@ namespace Attendances.ZKTecoBackendService.Events
         /// Destroy the event message after it is handled.
         /// </summary>
         /// <param name="msgId"></param>
-        private void Destroy(string msgId)
+        private void DestroyMessage(string msgId)
         {
             if (string.IsNullOrWhiteSpace(msgId))
             {

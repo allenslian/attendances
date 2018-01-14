@@ -6,6 +6,11 @@ namespace Attendances.ZKTecoBackendService.Models
 {
     public class AttendanceLog : IIdentityKey
     {
+        /// <summary>
+        /// For json serialize
+        /// </summary>
+        public AttendanceLog() { }
+
         private AttendanceLog(string enrollNumber, int state, int mode,
             int workCode, int machineNumber, string deviceName, DeviceType type)
         {
@@ -52,32 +57,32 @@ namespace Attendances.ZKTecoBackendService.Models
             LogStatus = status;
         }
 
-        public string Id { get; private set; }
+        public string Id { get; set; }
 
-        public string UserId { get; private set; }
+        public string UserId { get; set; }
 
-        public int State { get; private set; }
+        public int State { get; set; }
 
-        public int Mode { get; private set; }
+        public int Mode { get; set; }
 
-        public int WorkCode { get; private set; }
+        public int WorkCode { get; set; }
 
-        public DateTime LogDate { get; private set; }
+        public DateTime LogDate { get; set; }
 
-        public string ProjectId { get; private set; }
+        public string ProjectId { get; set; }
 
-        public int MachineId { get; private set; }
+        public int MachineId { get; set; }
         /// <summary>
         /// Fingerprint/Facial recognition device name.
         /// It is one device worker is using.
         /// </summary>
-        public string DeviceName { get; private set; }
+        public string DeviceName { get; set; }
         /// <summary>
         /// It describes the device is checkin, checkout or checkin&out.
         /// </summary>
-        public DeviceType DeviceType { get; private set; }
+        public DeviceType DeviceType { get; set; }
 
-        public AttendanceStatus LogStatus { get; private set; }
+        public AttendanceStatus LogStatus { get; set; }
 
         #region Methods
 

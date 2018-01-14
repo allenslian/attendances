@@ -5,6 +5,7 @@ using Topshelf.Logging;
 using Attendances.ZKTecoBackendService.Models;
 using System.Collections.Generic;
 using System;
+using Newtonsoft.Json;
 
 namespace Attendances.ZKTecoBackendService.Handlers
 {
@@ -27,10 +28,14 @@ namespace Attendances.ZKTecoBackendService.Handlers
 
         public void Handle(EventMessage msg)
         {
-            var attendance = msg.Data as AttendanceLog;
-            if (attendance == null)
+            AttendanceLog attendance = null;
+            try
             {
-                Logger.DebugFormat("EventMessage.Data type[{type}] is not supported.", msg.Data.GetType().FullName);
+                attendance = JsonConvert.DeserializeObject<AttendanceLog>(msg.JsonData);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorFormat("DeserializeObject error: {@ex}, EventMessage.Data type[{type}] is not supported.", ex, msg.JsonData);
                 return;
             }
 
@@ -77,20 +82,30 @@ namespace Attendances.ZKTecoBackendService.Handlers
             {
                 return false;
             }
-            return (int)result > 0;
+            return Convert.ToInt32(result) > 0;
         }        
 
         private void CheckIn(AttendanceLog attendance, string workerId)
         {
+            Logger.DebugFormat("Attendance({id}) CheckIn executes.", attendance.Id);
             attendance.CheckIn();
+
+            Logger.Debug("SaveAttendanceLog executes.");
             SaveAttendanceLog(attendance);
+
+            Logger.Debug("Bundle.CheckInToCTMS executes.");
             Bundle.CheckInToCTMS(attendance, workerId);
         }
 
         private void CheckOut(AttendanceLog attendance, string workerId)
         {
+            Logger.DebugFormat("Attendance({id}) CheckOut executes.", attendance.Id);
             attendance.CheckOut();
+
+            Logger.Debug("SaveAttendanceLog executes.");
             SaveAttendanceLog(attendance);
+
+            Logger.Debug("Bundle.CheckOutToCTMS executes.");
             Bundle.CheckOutToCTMS(attendance, workerId);
         }
 
@@ -101,6 +116,7 @@ namespace Attendances.ZKTecoBackendService.Handlers
             try
             {
                 status = attendance.CalculateStatus(lastAttendance);
+                Logger.DebugFormat("Attendance({id}) status: {status}.", attendance.Id, status);
             }
             catch (NotSupportedException ex)
             {

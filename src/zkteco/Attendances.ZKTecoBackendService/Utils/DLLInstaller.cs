@@ -20,7 +20,7 @@ namespace Attendances.ZKTecoBackendService.Utils
 #if x64
             RegisterX64DLLs();
 #else
-            Registerx86DLLs();
+            RegisterX86DLLs();
 #endif
         }
 

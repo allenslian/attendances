@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+	<ResolveComReferenceSilent>True</ResolveComReferenceSilent>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
@@ -184,6 +185,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
+	<ZKTecoBats Include="..\libs\*.bat" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- Copy zkteco com libs -->
@@ -191,8 +193,7 @@
     <ZKTecoDLLs Include="..\libs\x86\*.dll">
       <!-- reference: https://blogs.msdn.microsoft.com/jomo_fisher/2005/01/25/hack-the-build-hide-items-from-visual-studio-solution-explorer/ -->
       <InProject>false</InProject>
-    </ZKTecoDLLs>
-    <ZKTecoBats Include="..\libs\*.bat" />
+    </ZKTecoDLLs>    
     <ZKTecoOutput Include="$(OutputPath)\x86">
       <InProject>false</InProject>
     </ZKTecoOutput>
@@ -200,12 +201,11 @@
   <ItemGroup Condition=" '$(Platform)' != 'AnyCPU' ">
     <ZKTecoDLLs Include="..\libs\$(Platform)\*.dll">
       <InProject>false</InProject>
-    </ZKTecoDLLs>
-    <ZKTecoBats Include="..\libs\*.bat" />
+    </ZKTecoDLLs>    
     <ZKTecoOutput Include="$(OutputPath)\$(Platform)">
       <InProject>false</InProject>
     </ZKTecoOutput>
-  </ItemGroup>
+  </ItemGroup>  
   <ItemGroup>
     <COMReference Include="zkemkeeper">
       <Guid>{FE9DED34-E159-408E-8490-B720A5E632C7}</Guid>

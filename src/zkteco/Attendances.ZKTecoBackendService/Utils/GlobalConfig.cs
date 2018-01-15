@@ -151,6 +151,21 @@ namespace Attendances.ZKTecoBackendService.Utils
             }
         }
 
+
+        private static int _resendIntervalMinutes = -1;
+
+        public static int ResendIntervalMinutes
+        {
+            get
+            {
+                if (_resendIntervalMinutes < 0)
+                {
+                    _resendIntervalMinutes = ReadValueFromConfig("ResendIntervalMinutes", 60);
+                }
+                return _resendIntervalMinutes;
+            }
+        }
+
         #region Private methods
         /// <summary>
         /// Read int value from configuration file.

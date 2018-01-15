@@ -45,7 +45,7 @@ namespace Attendances.ZKTecoBackendService
                         }).AddTrigger(() =>
                         {
                             return TriggerBuilder.Create().WithIdentity("retryTrigger", "syncbackend")
-                            .StartNow().WithSimpleSchedule(b => b.WithIntervalInMinutes(5).RepeatForever()).Build();
+                            .StartNow().WithSimpleSchedule(b => b.WithIntervalInMinutes(GlobalConfig.ResendIntervalMinutes).RepeatForever()).Build();
                         });                        
                     });                    
                 });

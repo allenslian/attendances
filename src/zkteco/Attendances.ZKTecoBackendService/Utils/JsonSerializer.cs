@@ -1,11 +1,13 @@
-﻿using System;
-using RestSharp;
+﻿using RestSharp;
 using RestSharp.Deserializers;
 using RestSharp.Serializers;
 using System.IO;
 
 namespace Attendances.ZKTecoBackendService.Utils
 {
+    /// <summary>
+    /// A json serializer/deserializer for restsharp.
+    /// </summary>
     public class JsonSerializer : ISerializer, IDeserializer
     {
         private Newtonsoft.Json.JsonSerializer _serializer;

@@ -72,6 +72,7 @@ namespace Attendances.ZKTecoBackendService.Devices
             Port = info.Port;
             DeviceName = info.DeviceName;
             DeviceType = info.Type;
+            Password = info.Password;
         }
 
         #endregion
@@ -90,11 +91,13 @@ namespace Attendances.ZKTecoBackendService.Devices
 
         public DeviceType DeviceType { get; private set; }
 
+        public int Password { get; private set; }
+
         public Task StartAsync()
         {
             return Task.Run(() =>
             {
-                Logger.Debug("ZKtecoDevice StartAsync is starting...");
+                Logger.DebugFormat("ZKtecoDevice StartAsync is starting on the thread({id}).", Thread.CurrentThread.ManagedThreadId);
                 while (!Connnect())
                 {
                     if (RetryTimes >= GlobalConfig.MaxRetryTimes)
@@ -105,9 +108,9 @@ namespace Attendances.ZKTecoBackendService.Devices
                         return;
                     }
 
-                    Thread.SpinWait(10000);
+                    Thread.Sleep(10000);
                     RetryTimes++;
-                    Logger.DebugFormat("Reconnect the device({ip}:{port}) at {times} times.", IP, Port, RetryTimes);
+                    Logger.DebugFormat("Reconnect the device({ip}:{port}) at {times} times with error:({error}).", IP, Port, RetryTimes, GetLastError());
                 }
 
                 Logger.Debug("ZKtecoDevice: RegisterEvents.");
@@ -139,6 +142,10 @@ namespace Attendances.ZKTecoBackendService.Devices
         {
             try
             {
+                if (Password > -1)
+                {
+                    Device.SetCommPassword(Password);
+                }                
                 return Device.Connect_Net(IP, Port);
             }
             catch
@@ -175,12 +182,38 @@ namespace Attendances.ZKTecoBackendService.Devices
             if (Device.RegEvent(MachineNumber, 65535))
             {
                 Device.OnAttTransactionEx += OnAttTransactionEx;
+                Device.OnFinger += OnFinger;
+                Device.OnNewUser += OnNewUser;
+                Device.OnEnrollFingerEx += OnEnrollFingerEx;
+                Device.OnVerify += OnVerify;
+                Device.OnFingerFeature += OnFingerFeature;
+                Device.OnDoor += OnDoor;
+                Device.OnAlarm += OnAlarm;
+                Device.OnHIDNum += OnHIDNum;
+                Device.OnWriteCard += OnWriteCard;
+                Device.OnEmptyCard += OnEmptyCard;
+                Device.OnDeleteTemplate += OnDeleteTemplate;
+
+                Logger.Debug("Device has registered all the events.");
             }
         }
 
         private void UnregisterEvents()
         {
             Device.OnAttTransactionEx -= OnAttTransactionEx;
+            Device.OnFinger -= OnFinger;
+            Device.OnNewUser -= OnNewUser;
+            Device.OnEnrollFingerEx -= OnEnrollFingerEx;
+            Device.OnVerify -= OnVerify;
+            Device.OnFingerFeature -= OnFingerFeature;
+            Device.OnDoor -= OnDoor;
+            Device.OnAlarm -= OnAlarm;
+            Device.OnHIDNum -= OnHIDNum;
+            Device.OnWriteCard -= OnWriteCard;
+            Device.OnEmptyCard -= OnEmptyCard;
+            Device.OnDeleteTemplate -= OnDeleteTemplate;
+
+            Logger.Debug("Device has unregistered all the events.");
         }
 
         private void StartRealTimeMonitor()

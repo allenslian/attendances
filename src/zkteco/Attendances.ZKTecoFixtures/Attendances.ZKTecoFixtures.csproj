@@ -94,6 +94,7 @@
     <Compile Include="SqliteFixtures.cs" />
     <Compile Include="ArgumentItemFixtures.cs" />
     <Compile Include="HandlerFixtures.cs" />
+    <Compile Include="DeviceConfigurationFixtures.cs" />
     <Compile Include="WebApiFixtures.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -55,6 +55,8 @@ namespace Attendances.ZKTecoBackendService.Handlers
             }            
 
             Interlocked.CompareExchange(ref _running, 0, 1);
+
+            Logger.DebugFormat("ResendAttendanceHandler.Execute ends on the thread({id}).", Thread.CurrentThread.ManagedThreadId);
         }
 
         /// <summary>

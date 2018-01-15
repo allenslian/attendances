@@ -1,4 +1,5 @@
 ﻿using Attendances.ZKTecoBackendService.Models;
+using System;
 using System.Configuration;
 
 namespace Attendances.ZKTecoBackendService.Configs
@@ -37,6 +38,14 @@ namespace Attendances.ZKTecoBackendService.Configs
         {
             get { return (DeviceType)base["type"]; }
             set { base["type"] = value; }
+        }
+
+        [ConfigurationProperty("password",
+            IsRequired = false, DefaultValue = -1)]
+        public int Password
+        {
+            get { return (int)base["password"]; }
+            set { base["password"] = value; }
         }
     }
 }

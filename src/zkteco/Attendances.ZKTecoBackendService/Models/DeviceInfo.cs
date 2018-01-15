@@ -6,12 +6,13 @@
     public class DeviceInfo
     {
         public DeviceInfo(string deviceName, string ip, 
-            int port, DeviceType type)
+            int port, DeviceType type, int password = -1)
         {
-            DeviceName = deviceName == null ? "" : deviceName.Replace("\"", "");
-            IP = ip == null ? "" : ip.Replace("\"", "");
+            DeviceName = deviceName;
+            IP = ip;
             Port = port;
             Type = type;
+            Password = password;
         }
 
         /// <summary>
@@ -33,5 +34,10 @@
         /// Device type has three kinds: in, out, and in&out.
         /// </summary>
         public DeviceType Type { get; private set; }
+
+        /// <summary>
+        /// Communication password
+        /// </summary>
+        public int Password { get; private set; }
     }
 }

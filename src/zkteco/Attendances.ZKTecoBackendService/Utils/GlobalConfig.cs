@@ -30,7 +30,7 @@ namespace Attendances.ZKTecoBackendService.Utils
                                 continue;
                             }
 
-                            devices.Add(new DeviceInfo(config.Name, config.IP, config.Port, config.Type));
+                            devices.Add(new DeviceInfo(config.Name, config.IP, config.Port, config.Type, config.Password));
                         }
                     }
                     _devices = devices.ToArray();

@@ -1,6 +1,7 @@
 ﻿using Attendances.ZKTecoBackendService.Interfaces;
 using Attendances.ZKTecoBackendService.Models;
 using System.Collections.Generic;
+using Topshelf.Logging;
 
 namespace Attendances.ZKTecoBackendService.Connectors
 {
@@ -10,7 +11,11 @@ namespace Attendances.ZKTecoBackendService.Connectors
         {
             Database = db;
             WebApi = api;
+
+            Logger = HostLogger.Get<Bundle>();
         }
+
+        private LogWriter Logger { get; set; }
 
         public SqliteConnector Database { get; private set; }
 
@@ -112,15 +117,21 @@ namespace Attendances.ZKTecoBackendService.Connectors
 
         public void Dispose()
         {
+            Logger.Debug("Bundle is disposing...");
+
             if (Database != null)
-            {
+            {                
                 Database.Dispose();
+                Logger.Debug("Database disposes completely.");
             }
 
             if (WebApi != null)
-            {
+            {                
                 WebApi.Dispose();
+                Logger.Debug("WebApi disposes completely.");
             }
+
+            Logger.Debug("Bundle disposes completely.");
         }
     }
 }

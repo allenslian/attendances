@@ -224,12 +224,16 @@ namespace Attendances.ZKTecoBackendService.Events
 
         public void Dispose()
         {
+            Logger.Debug("EventHub is disposing...");
+
             Timer.Stop();
             Timer.Elapsed -= OnHandleEventMessages;
             Timer = null;
 
             Subscribers.Clear();
             Subscribers = null;
+
+            Logger.Debug("EventHub disposes completely.");
         }
     }
 }

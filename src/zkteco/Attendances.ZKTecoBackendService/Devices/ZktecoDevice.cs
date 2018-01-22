@@ -107,9 +107,9 @@ namespace Attendances.ZKTecoBackendService.Devices
                             IP, Port, GetLastError());
                         return;
                     }
-
-                    Thread.Sleep(10000);
+                    
                     RetryTimes++;
+                    Thread.Sleep(30000 * RetryTimes);
                     Logger.DebugFormat("Reconnect the device({ip}:{port}) at {times} times with error:({error}).", IP, Port, RetryTimes, GetLastError());
                 }
 
@@ -128,7 +128,7 @@ namespace Attendances.ZKTecoBackendService.Devices
 
         public void Stop()
         {
-            Logger.Debug("ZKtecoDevice is stoping...");
+            Logger.DebugFormat("ZKtecoDevice({ip}:{port}) is stoping...", IP, Port);
 
             Logger.Debug("ZKtecoDevice: Signal.Set");
             Signal.Set();

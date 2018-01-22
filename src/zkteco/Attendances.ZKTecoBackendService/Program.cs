@@ -34,6 +34,9 @@ namespace Attendances.ZKTecoBackendService
                     x.WhenStarted((s, h) => s.Start(h));
                     x.WhenStopped((s, h) => s.Stop(h));
 
+                    //When Topshelf shuts down, it will start again.
+                    x.WhenShutdown((s, h) => s.Shutdown(h));
+
                     //Retry to send failed attendance logs.
                     x.UseQuartzNinject();
 

@@ -105,6 +105,32 @@ namespace Attendances.ZKTecoFixtures
             Assert.AreEqual(0, sync);
         }
 
+        [TestMethod]
+        public void TestGetLastAttendanceLog()
+        {
+            var attendance1 = new AttendanceLog("12", 15, 15, 2018, 1, 13, 14, 11, 30, 1, 1, "gate01", DeviceType.InOut);
+            var bundle = new Bundle(new SqliteConnector(), mock.Object);
+            SaveAttendanceLog(bundle, attendance1);
+            var attendance2 = GetLastAttendanceLog(bundle, "12", attendance1.LogDate);
+            Assert.IsNull(attendance2);
+
+            var attendance3 = new AttendanceLog("3", 15, 15, 2018, 1, 12, 14, 11, 30, 1, 1, "gate01", DeviceType.InOut);
+            SaveAttendanceLog(bundle, attendance3);
+
+            var attendance4 = new AttendanceLog("3", 15, 15, 2018, 1, 16, 14, 11, 30, 1, 1, "gate01", DeviceType.InOut);
+            SaveAttendanceLog(bundle, attendance4);
+
+            var attendance5 = new AttendanceLog("3", 15, 15, 2018, 1, 15, 14, 11, 30, 1, 1, "gate01", DeviceType.InOut);
+            SaveAttendanceLog(bundle, attendance5);
+
+            var attendance6 = new AttendanceLog("3", 15, 15, 2018, 1, 13, 14, 11, 30, 1, 1, "gate01", DeviceType.InOut);
+            SaveAttendanceLog(bundle, attendance6);
+
+            var attendance = GetLastAttendanceLog(bundle, "3", attendance5.LogDate);
+            Assert.IsNotNull(attendance);
+            Assert.AreEqual(attendance.LogDate, attendance6.LogDate);
+        }
+
         private void SaveAttendanceLog(Bundle bundle, AttendanceLog attendance)
         {
             var result = bundle.Database.QueryScalar(
@@ -135,6 +161,39 @@ namespace Attendances.ZKTecoFixtures
                         { "@log_status", (int)attendance.LogStatus }
                     });
             }
+        }
+
+        private AttendanceLog GetLastAttendanceLog(Bundle bundle, string enrollNumber, DateTime logDate)
+        {
+            var reader = bundle.Database.QuerySet(
+                @"SELECT id, enroll_number, state, mode, log_date, work_code,
+                machine_id, project_id, ifnull(device_name,''), ifnull(device_type,0), log_status FROM attendance_logs 
+                WHERE enroll_number=@enroll_number AND log_date<@cur_date
+                ORDER BY log_date DESC LIMIT 1;",
+                new Dictionary<string, object>
+                {
+                    { "@enroll_number", enrollNumber },
+                    { "@cur_date", logDate}
+                });
+
+            AttendanceLog log = null;
+            while (reader.Read())
+            {
+                log = new AttendanceLog(
+                    reader.GetString(0),
+                    reader.GetString(1),
+                    reader.GetInt32(2),
+                    reader.GetInt32(3),
+                    reader.GetDateTime(4),
+                    reader.GetInt32(5),
+                    reader.GetInt32(6),
+                    reader.GetString(7),
+                    reader.GetString(8),
+                    (DeviceType)reader.GetInt32(9),
+                    (AttendanceStatus)reader.GetInt32(10));
+                break;
+            }
+            return log;
         }
     }
 }

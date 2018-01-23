@@ -111,7 +111,7 @@ namespace Attendances.ZKTecoBackendService.Handlers
 
         private void CheckInOrCheckOut(AttendanceLog attendance, string workerId)
         {
-            var lastAttendance = GetLastAttendanceLog(attendance.UserId);
+            var lastAttendance = GetLastAttendanceLog(attendance.UserId, attendance.LogDate);
             AttendanceStatus status = AttendanceStatus.Unknown;
             try
             {
@@ -162,15 +162,17 @@ namespace Attendances.ZKTecoBackendService.Handlers
                 });
         }
 
-        private AttendanceLog GetLastAttendanceLog(string enrollNumber)
+        private AttendanceLog GetLastAttendanceLog(string enrollNumber, DateTime logDate)
         {
             var reader = Bundle.Database.QuerySet(
                 @"SELECT id, enroll_number, state, mode, log_date, work_code,
                 machine_id, project_id, ifnull(device_name,''), ifnull(device_type,0), log_status FROM attendance_logs 
-                WHERE enroll_number=@enroll_number ORDER BY log_date DESC LIMIT 1;",
+                WHERE enroll_number=@enroll_number AND log_date<@cur_date
+                ORDER BY log_date DESC LIMIT 1;",
                 new Dictionary<string, object>
                 {
-                    { "@enroll_number", enrollNumber }
+                    { "@enroll_number", enrollNumber },
+                    { "@cur_date", logDate}
                 });
 
             AttendanceLog log = null;

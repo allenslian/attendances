@@ -60,6 +60,13 @@ namespace Attendances.ZKTecoBackendService
                 cfg.SetDisplayName("ZKTeco Attendance Backend Service");
                 cfg.SetDescription("ZKTeco Synchronize attendance log to CTMS.");
 
+                cfg.EnableServiceRecovery(x => 
+                {
+                    x.RestartService(0);
+                    x.OnCrashOnly();
+                    x.SetResetPeriod(1);
+                });
+
                 cfg.OnException(ex =>
                 {
                     logger.Error("OnException: {@ex}", ex);

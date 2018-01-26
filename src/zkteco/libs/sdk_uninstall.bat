@@ -2,11 +2,11 @@
 REM set x86/x64
 set Platform=%1
 
-if [%Platform%]==[] goto runx86 
+if [%Platform%]==[] goto failure 
 if [%Platform%]==[x86] goto runx86 
 if [%Platform%]==[x64] goto runx64
 
-goto err
+goto failure
 
 :runx86
 %windir%\syswow64\regsvr32 /u /s %windir%\syswow64\zkemkeeper.dll 
@@ -23,7 +23,7 @@ del %windir%\syswow64\plcomms.dll
 del %windir%\syswow64\plrscagent.dll
 del %windir%\syswow64\plrscomm.dll
 del %windir%\syswow64\pltcpcomm.dll
-goto end
+goto success
 
 :runx64
 %windir%\system32\regsvr32 /u /s %windir%\system32\zkemkeeper.dll -u
@@ -40,11 +40,15 @@ del %windir%\system32\plcomms.dll
 del %windir%\system32\plrscagent.dll
 del %windir%\system32\plrscomm.dll
 del %windir%\system32\pltcpcomm.dll
+goto success
+
+:failure
+echo Not supported argument value.
+echo Fail to uninstall sdk.
 goto end
 
-:err
-echo Not supported argument value.
+:success
+echo Uninstall sdk successfully.
+goto end
 
 :end
-echo run complete.
-

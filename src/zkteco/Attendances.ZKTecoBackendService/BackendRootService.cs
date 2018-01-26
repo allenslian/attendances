@@ -65,9 +65,9 @@ namespace Attendances.ZKTecoBackendService
         public bool Shutdown(HostControl hostControl)
         {
             Logger.Debug("BackendRootService is shutting down...");
-            Logger.Debug("BackendRootService restarts.");
-            //Restart the service
-            hostControl.Restart();
+            Logger.Debug("BackendRootService stops.");
+            //Stop the root service
+            hostControl.Stop();
             return true;
         }
 

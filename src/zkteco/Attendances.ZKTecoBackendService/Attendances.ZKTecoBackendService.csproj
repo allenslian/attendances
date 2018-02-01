@@ -215,7 +215,7 @@
       <Lcid>0</Lcid>
       <WrapperTool>tlbimp</WrapperTool>
       <Isolated>False</Isolated>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
   <ItemGroup />
@@ -237,25 +237,16 @@
     <Error Condition="!Exists('..\..\..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets'))" />
   </Target>
   <Import Project="..\..\..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets" Condition="Exists('..\..\..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" />
-  
   <PropertyGroup>
     <Major>1</Major>
     <Minor>0</Minor>
     <Build>0</Build>
     <Revision>0</Revision>
   </PropertyGroup>
-  
   <Target Name="Version">
     <GitVersion LocalPath="$(MSBuildProjectDirectory)">
-        <Output TaskParameter="CommitHash" PropertyName="Revision" />
+      <Output TaskParameter="CommitHash" PropertyName="Revision" />
     </GitVersion>
-    <AssemblyInfo
-        CodeLanguage="CS"
-        OutputFile="Properties\SharedAssemblyInfo.cs"        
-        AssemblyCompany="Magicsoft Asia Systems Pte Ltd."
-        AssemblyCopyright="Copyright © Magicsoft-Asia 2018"
-        AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Revision)"
-        AssemblyVersion="$(Major).$(Minor).$(Build)"
-        AssemblyFileVersion="$(Major).$(Minor).$(Build)" />
+    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\SharedAssemblyInfo.cs" AssemblyCompany="Magicsoft Asia Systems Pte Ltd." AssemblyCopyright="Copyright © Magicsoft-Asia 2018" AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Revision)" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" />
   </Target>
 </Project>

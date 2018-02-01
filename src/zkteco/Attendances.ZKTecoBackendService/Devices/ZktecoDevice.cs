@@ -52,7 +52,7 @@ namespace Attendances.ZKTecoBackendService.Devices
 
         #region Constructors
 
-        private ZktecoDevice(CZKEMClass device)
+        private ZktecoDevice(CZKEM device)
         {
             Device = device;            
 
@@ -64,7 +64,7 @@ namespace Attendances.ZKTecoBackendService.Devices
             Logger = HostLogger.Get<ZktecoDevice>();
         }        
 
-        public ZktecoDevice(CZKEMClass device, DeviceInfo info, EventHub hub) : this(device)
+        public ZktecoDevice(CZKEM device, DeviceInfo info, EventHub hub) : this(device)
         {
             Hub = hub;
 
@@ -77,7 +77,7 @@ namespace Attendances.ZKTecoBackendService.Devices
 
         #endregion
 
-        public CZKEMClass Device { get; private set; }
+        public CZKEM Device { get; private set; }
 
         public string IP { get; private set; }
 

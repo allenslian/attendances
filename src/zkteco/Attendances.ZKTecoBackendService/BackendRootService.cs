@@ -77,7 +77,7 @@ namespace Attendances.ZKTecoBackendService
             Devices = new List<ZktecoDevice>(count);
             for (var i = 0; i < count; i++)
             {
-                var device = new ZktecoDevice(new zkemkeeper.CZKEMClass(), GlobalConfig.Devices[i], Hub);
+                var device = new ZktecoDevice(new zkemkeeper.CZKEM(), GlobalConfig.Devices[i], Hub);
                 device.StartAsync();
                 Devices.Add(device);
                 Logger.DebugFormat("RegisterDevices: device name({name}), ip({ip}), port({port}), kind({kind}) on the thread({id}).", 

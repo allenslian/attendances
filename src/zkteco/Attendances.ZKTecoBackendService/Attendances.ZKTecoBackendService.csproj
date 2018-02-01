@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Version;Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -12,7 +12,7 @@
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-	<ResolveComReferenceSilent>True</ResolveComReferenceSilent>
+    <ResolveComReferenceSilent>True</ResolveComReferenceSilent>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
@@ -172,6 +172,7 @@
     <Compile Include="Models\ArgumentItem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\SharedAssemblyInfo.cs" />
     <Compile Include="Utils\DbInstaller.cs" />
     <Compile Include="Utils\DLLInstaller.cs" />
     <Compile Include="Utils\GlobalConfig.cs" />
@@ -185,7 +186,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
-	<ZKTecoBats Include="..\libs\*.bat" />
+    <ZKTecoBats Include="..\libs\*.bat" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- Copy zkteco com libs -->
@@ -193,7 +194,7 @@
     <ZKTecoDLLs Include="..\libs\x86\*.dll">
       <!-- reference: https://blogs.msdn.microsoft.com/jomo_fisher/2005/01/25/hack-the-build-hide-items-from-visual-studio-solution-explorer/ -->
       <InProject>false</InProject>
-    </ZKTecoDLLs>    
+    </ZKTecoDLLs>
     <ZKTecoOutput Include="$(OutputPath)\x86">
       <InProject>false</InProject>
     </ZKTecoOutput>
@@ -201,11 +202,11 @@
   <ItemGroup Condition=" '$(Platform)' != 'AnyCPU' ">
     <ZKTecoDLLs Include="..\libs\$(Platform)\*.dll">
       <InProject>false</InProject>
-    </ZKTecoDLLs>    
+    </ZKTecoDLLs>
     <ZKTecoOutput Include="$(OutputPath)\$(Platform)">
       <InProject>false</InProject>
     </ZKTecoOutput>
-  </ItemGroup>  
+  </ItemGroup>
   <ItemGroup>
     <COMReference Include="zkemkeeper">
       <Guid>{FE9DED34-E159-408E-8490-B720A5E632C7}</Guid>
@@ -214,7 +215,7 @@
       <Lcid>0</Lcid>
       <WrapperTool>tlbimp</WrapperTool>
       <Isolated>False</Isolated>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
   <ItemGroup />
@@ -233,5 +234,19 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\..\..\packages\System.Data.SQLite.Core.1.0.106.0\build\net46\System.Data.SQLite.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\System.Data.SQLite.Core.1.0.106.0\build\net46\System.Data.SQLite.Core.targets'))" />
+    <Error Condition="!Exists('..\..\..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets'))" />
+  </Target>
+  <Import Project="..\..\..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets" Condition="Exists('..\..\..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" />
+  <PropertyGroup>
+    <Major>1</Major>
+    <Minor>0</Minor>
+    <Build>0</Build>
+    <Revision>0</Revision>
+  </PropertyGroup>
+  <Target Name="Version">
+    <GitVersion LocalPath="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="CommitHash" PropertyName="Revision" />
+    </GitVersion>
+    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\SharedAssemblyInfo.cs" AssemblyCompany="Magicsoft Asia Systems Pte Ltd." AssemblyCopyright="Copyright © Magicsoft-Asia 2018" AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Revision)" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" />
   </Target>
 </Project>

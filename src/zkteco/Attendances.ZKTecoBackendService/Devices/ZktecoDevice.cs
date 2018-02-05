@@ -56,7 +56,7 @@ namespace Attendances.ZKTecoBackendService.Devices
         {
             Device = device;            
 
-            Timer = new System.Timers.Timer(10000);
+            Timer = new System.Timers.Timer(30000);
             Timer.Elapsed += OnReadAttendances;
 
             Signal = new ManualResetEvent(false);
@@ -77,6 +77,8 @@ namespace Attendances.ZKTecoBackendService.Devices
 
         #endregion
 
+        #region Properties
+
         public CZKEM Device { get; private set; }
 
         public string IP { get; private set; }
@@ -92,6 +94,8 @@ namespace Attendances.ZKTecoBackendService.Devices
         public DeviceType DeviceType { get; private set; }
 
         public int Password { get; private set; }
+
+        #endregion
 
         public Task StartAsync()
         {
@@ -246,15 +250,15 @@ namespace Attendances.ZKTecoBackendService.Devices
         /// work code returned during verification. 
         /// Return 0 when the device does not support work code.
         /// </param>
-        private void OnAttTransactionEx(string enrollNumber, int isInValid, int attState, int verifyMethod,
+        private async void OnAttTransactionEx(string enrollNumber, int isInValid, int attState, int verifyMethod,
             int year, int month, int day, int hour, int minute, int second, int workCode)
         {
-            var watch = Stopwatch.StartNew();
+            var watch = new Stopwatch();
 
             var log = new AttendanceLog(enrollNumber, attState, verifyMethod,
                 year, month, day, hour, minute, second, workCode, MachineNumber, DeviceName, DeviceType);
 
-            Hub.PublishAsync(new EventMessage(EventType.AttTransactionEx, log));
+            await Hub.PublishAsync(new EventMessage(EventType.AttTransactionEx, log));
 
             watch.Stop();
 
@@ -277,8 +281,8 @@ namespace Attendances.ZKTecoBackendService.Devices
         private void OnNewUser(int enrollNumber)
         {
             var number = enrollNumber.ToString("{0:D1}");
-            Hub.PublishAsync(new EventMessage(EventType.NewUser, 
-                new ArgumentItem(number, new ArgumentItem.ArgumentValuePair("EnrollNumber", number))));
+            //Hub.PublishAsync(new EventMessage(EventType.NewUser, 
+            //    new ArgumentItem(number, new ArgumentItem.ArgumentValuePair("EnrollNumber", number))));
             Logger.DebugFormat("OnNewUser:EnrollNumber[{EnrollNumber}].", number);
         }
 
@@ -291,12 +295,12 @@ namespace Attendances.ZKTecoBackendService.Devices
         /// <param name="templateLength">Length of the fingerprint template</param>
         private void OnEnrollFingerEx(string enrollNumber, int fingerIndex, int actionResult, int templateLength)
         {
-            Hub.PublishAsync(new EventMessage(EventType.EnrollFingerEx, 
-                new ArgumentItem(enrollNumber, 
-                new ArgumentItem.ArgumentValuePair("EnrollNumber", enrollNumber),
-                new ArgumentItem.ArgumentValuePair("FingerIndex", fingerIndex),
-                new ArgumentItem.ArgumentValuePair("ActionResult", actionResult),
-                new ArgumentItem.ArgumentValuePair("TemplateLength", templateLength))));
+            //Hub.PublishAsync(new EventMessage(EventType.EnrollFingerEx, 
+            //    new ArgumentItem(enrollNumber, 
+            //    new ArgumentItem.ArgumentValuePair("EnrollNumber", enrollNumber),
+            //    new ArgumentItem.ArgumentValuePair("FingerIndex", fingerIndex),
+            //    new ArgumentItem.ArgumentValuePair("ActionResult", actionResult),
+            //    new ArgumentItem.ArgumentValuePair("TemplateLength", templateLength))));
 
             Logger.DebugFormat("OnEnrollFingerEx:EnrollNumber[{EnrollNumber}], FingerIndex[{FingerIndex}], ActionResult[{ActionResult}], TemplateLength[{TemplateLength}].",
                 enrollNumber, fingerIndex, actionResult, templateLength);

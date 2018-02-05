@@ -48,7 +48,7 @@ namespace Attendances.ZKTecoFixtures
             // No any subscriber to handle the message.
             var db = new SqliteConnector();
             var hub = new EventHub(db);
-            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 12, 11, 30, 1, 1, "gate01", DeviceType.OnlyIn);
+            var attendance = new AttendanceLog("1", 1, 1, 2018, 1, 13, 12, 11, 30, 1, 1, "gate01", DeviceType.OnlyIn);
             hub.PublishAsync(new EventMessage(EventType.AttTransactionEx, attendance)).GetAwaiter().GetResult();
 
             var results = db.QueryScalar(
@@ -71,8 +71,8 @@ namespace Attendances.ZKTecoFixtures
 
             var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 12, 11, 30, 1, 1, "gate01", DeviceType.OnlyIn);
             hub.PublishAsync(new EventMessage(EventType.AttTransactionEx, attendance)).GetAwaiter().GetResult();
-
-            Thread.Sleep(30000);
+            
+            Thread.Sleep(20000);
 
             var results = bundle.Database.QueryScalar(
                 "select count(*) from queue where refer_id=@refer_id",
@@ -81,7 +81,7 @@ namespace Attendances.ZKTecoFixtures
                     { "@refer_id", attendance.Id }
                 });
 
-            var count = Convert.ToInt32(results);
+            var count = (long)results;
             Assert.IsTrue(count == 0);
 
             results = bundle.Database.QueryScalar(

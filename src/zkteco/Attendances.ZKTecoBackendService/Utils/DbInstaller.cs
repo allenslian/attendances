@@ -39,9 +39,8 @@ namespace Attendances.ZKTecoBackendService.Utils
                     Directory.CreateDirectory(dir);
                 }
                 SQLiteConnection.CreateFile(_dbPath);
-            }
-
-            CreateTableStructures(_builder);
+                CreateTableStructures(_builder);
+            }           
         }
 
         private static void CreateTableStructures(SQLiteConnectionStringBuilder builder)

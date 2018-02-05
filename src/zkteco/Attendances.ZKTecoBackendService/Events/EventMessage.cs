@@ -5,7 +5,7 @@ using System;
 
 namespace Attendances.ZKTecoBackendService.Events
 {
-    public class EventMessage
+    public class EventMessage : MessageBase
     {
         /// <summary>
         /// For deserialize
@@ -14,9 +14,14 @@ namespace Attendances.ZKTecoBackendService.Events
 
         public EventMessage(EventType kind, IIdentityKey data)
         {
+            if (data == null)
+            {
+                throw new ArgumentNullException("data");
+            }
+
             Id = Guid.NewGuid().ToString();
             Kind = kind;
-            ReferenceId = data == null ? "" : data.Id;
+            ReferenceId = data.Id;
             Data = data;
             OccurredOn = DateTime.UtcNow;
         }
@@ -34,65 +39,30 @@ namespace Attendances.ZKTecoBackendService.Events
             Id = id;
             Kind = kind;
             ReferenceId = referId;
-            JsonData = json;
+            Json = json;
             OccurredOn = occurredOn;
-        }
-
-        /// <summary>
-        /// It is used for initializing failed message.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="referId"></param>
-        /// <param name="json"></param>
-        /// <param name="occurredOn"></param>
-        /// <param name="retryTimes"></param>
-        public EventMessage(string id, string referId, string json, DateTime occurredOn, int retryTimes)
-        {
-            Id = id;
-            Kind = EventType.Failed;
-            ReferenceId = referId;
-            JsonData = json;
-            OccurredOn = occurredOn;
-            RetryTimes = retryTimes;
-        }
+        }        
 
         public EventType Kind { get; set; }
 
-        public string Id { get; set; }
         /// <summary>
-        /// If its Kind is Failed, this ReferenceId will be handler type full name.
+        /// Convert Data from json.
         /// </summary>
-        public string ReferenceId { get; set; }
-
-        public IIdentityKey Data { get; set; }
-
-        private string _json;
-        /// <summary>
-        /// Data property's json format
-        /// </summary>
-        public string JsonData
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T ConvertFromJSON<T>() where T : IIdentityKey
         {
-            get
+            if (string.IsNullOrWhiteSpace(Json))
             {
-                if (_json == null)
-                {
-                    if (Data == null)
-                    {
-                        _json = string.Empty;
-                    }
-                    else
-                    {
-                        _json = JsonConvert.SerializeObject(Data);
-                    }
-                }
-                return _json;
+                return default(T);                
             }
 
-            set { _json = value; }
+            var instance = JsonConvert.DeserializeObject<T>(Json);
+            if (instance != null)
+            {
+                Data = instance;
+            }
+            return instance;
         }
-
-        public DateTime OccurredOn { get; set; }
-
-        public int RetryTimes { get; set; }
     }
 }

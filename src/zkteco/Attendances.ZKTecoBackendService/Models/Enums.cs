@@ -8,7 +8,7 @@
         /// <summary>
         /// Out type means, workers only go out from this door, not go in.
         /// </summary>
-        Out = -1,
+        OnlyOut = -1,
         /// <summary>
         /// InOut type means, workers may go in / out from this door.
         /// </summary>
@@ -16,7 +16,7 @@
         /// <summary>
         /// In type means, workers only go in from this door, not go out.
         /// </summary>
-        In = 1
+        OnlyIn = 1
     }
 
     public enum AttendanceStatus
@@ -50,7 +50,12 @@
         HIDNum,
         WriteCard,
         EmptyCard,
-        DeleteTemplate,
-        Failed
+        DeleteTemplate
+    }
+
+    public enum FailedEventType
+    {
+        Unknown = -1,
+        NotFoundWorker = 1
     }
 }

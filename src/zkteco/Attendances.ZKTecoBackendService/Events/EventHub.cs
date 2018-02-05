@@ -47,8 +47,13 @@ namespace Attendances.ZKTecoBackendService.Events
             
             Timer = new System.Timers.Timer(10000);
             Timer.Elapsed += OnHandleEventMessages;
-        }        
+        }
 
+        /// <summary>
+        /// Publish event message into queue.
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <returns></returns>
         public Task PublishAsync(EventMessage msg)
         {
             return Task.Run(() => {
@@ -59,22 +64,37 @@ namespace Attendances.ZKTecoBackendService.Events
 
                 try
                 {
-                    if (msg.Kind != EventType.Failed)
-                    {
-                        EnqueueMessageQueue(msg);
-                    }
-                    else
-                    {
-                        EnqueueFailedQueue(msg);
-                    }
+                    EnqueueMessageQueue(msg);
                 }
                 catch (Exception ex)
                 {
                     Logger.ErrorFormat("PublishAsync error: {@error}.", ex);
                 }
-
-                Timer.Start();
             });                      
+        }
+
+        /// <summary>
+        /// Publish failed message into queue.
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <returns></returns>
+        public Task PublishAsync(FailedMessage msg)
+        {
+            return Task.Run(() => {
+                if (msg == null)
+                {
+                    return;
+                }
+
+                try
+                {
+                    EnqueueFailedQueue(msg);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorFormat("PublishAsync error: {@error}.", ex);
+                }
+            });
         }
 
         public void Subscribe(EventType kind, IEventHandler handler)
@@ -93,6 +113,8 @@ namespace Attendances.ZKTecoBackendService.Events
                 }
                 return list;
             });
+
+            Timer.Start();
         }
 
         private void OnHandleEventMessages(object sender, System.Timers.ElapsedEventArgs e)
@@ -128,21 +150,16 @@ namespace Attendances.ZKTecoBackendService.Events
                             Logger.DebugFormat("Executing the {handler}.", h.GetType().FullName);
                             h.Handle(msg);
                         }
-                        //catch(FailedHandleException ex)
-                        //{
-                        //    Logger.ErrorFormat("Invoking handler error[FailedHandleException]:{@ex}.", ex);
-                        //    var message = new EventMessage(EventType.Failed, ex.Argument);
-                        //    PublishAsync(message);
-                        //    Logger.DebugFormat("Failed message: {@msg}.", message);
-                        //    continue;
-                        //}
+                        catch (FailedHandleException ex)
+                        {
+                            Logger.ErrorFormat("Invoking handler error[FailedHandleException]:{@ex}.", ex);                            
+                            PublishAsync(ex.FailedMessage);
+                            Logger.DebugFormat("Failed message: {@msg}.", ex.FailedMessage);
+                            continue;
+                        }
                         catch (Exception ex)
                         {
                             Logger.ErrorFormat("Invoking handler error[Exception]:{@ex}.", ex);
-                            var message = new EventMessage(EventType.Failed,
-                                new ArgumentItem(h.HandlerKey, new ArgumentItem.ArgumentValuePair("Message", msg)));
-                            PublishAsync(message);
-                            Logger.DebugFormat("Failed message: {@msg}.", message);
                             continue;
                         }
                     }
@@ -166,7 +183,7 @@ namespace Attendances.ZKTecoBackendService.Events
                 new Dictionary<string, object> {
                     { "@id", msg.Id },
                     { "@refer_id", msg.ReferenceId },
-                    { "@message", msg.JsonData },
+                    { "@message", msg.DataToJSON() },
                     { "@event_type", (int)msg.Kind },
                     { "@create_at", msg.OccurredOn }
                 });
@@ -179,8 +196,31 @@ namespace Attendances.ZKTecoBackendService.Events
                 new Dictionary<string, object> {
                     { "@id", msg.Id },
                     { "@refer_id", msg.ReferenceId },
-                    { "@message", msg.JsonData },
+                    { "@message", msg.DataToJSON() },
                     { "@create_at", msg.OccurredOn }
+                });
+        }
+
+        private void EnqueueFailedQueue(FailedMessage msg)
+        {
+            var count = Database.QueryScalar(
+                "SELECT COUNT(*) FROM failed_queue WHERE refer_id=@refer_id;", 
+                new Dictionary<string, object> { { "@refer_id", msg.ReferenceId } });
+            // one record exists.
+            if (count != null && (long)count > 0)
+            {
+                return;
+            }
+
+            Database.Execute(
+                "INSERT INTO failed_queue(id, refer_id, message, create_at, retry_times, kind, handler) VALUES(@id, @refer_id, @message, @create_at, 0, @kind, @handler);",
+                new Dictionary<string, object> {
+                    { "@id", msg.Id },
+                    { "@refer_id", msg.ReferenceId },
+                    { "@message", msg.DataToJSON() },
+                    { "@create_at", msg.OccurredOn },
+                    { "@kind", (int)msg.Kind },
+                    { "@handler", msg.Handler }
                 });
         }
 
@@ -191,7 +231,7 @@ namespace Attendances.ZKTecoBackendService.Events
         private List<EventMessage> GetPendingMessages()
         {
             var results = new List<EventMessage>();
-            var reader = Database.QuerySet("SELECT id, event_type, refer_id, message, create_at FROM queue;");
+            var reader = Database.QuerySet("SELECT id, event_type, refer_id, message, create_at FROM queue ORDER BY create_at ASC;");
             while (reader.Read())
             {
                 results.Add(new EventMessage(

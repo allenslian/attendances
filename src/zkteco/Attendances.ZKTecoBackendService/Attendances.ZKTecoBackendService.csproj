@@ -159,6 +159,8 @@
     <Compile Include="Errors\FailedHandleException.cs" />
     <Compile Include="Events\EventHub.cs" />
     <Compile Include="Events\EventMessage.cs" />
+    <Compile Include="Events\FailedMessage.cs" />
+    <Compile Include="Events\MessageBase.cs" />
     <Compile Include="Handlers\FailedMessageHandler.cs" />
     <Compile Include="Handlers\ResendAttendanceHandler.cs" />
     <Compile Include="Handlers\UploadAttendanceHandler.cs" />

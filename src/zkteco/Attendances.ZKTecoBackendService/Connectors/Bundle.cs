@@ -38,10 +38,9 @@ namespace Attendances.ZKTecoBackendService.Connectors
             return string.Empty;
         }
 
-        public void CheckInToCTMS(AttendanceLog attendance, string workerId)
+        public async void CheckInToCTMS(AttendanceLog attendance, string workerId)
         {
-            var ok = WebApi.CheckIn(attendance.ProjectId, workerId, attendance.LogDate, attendance.DeviceName).
-                GetAwaiter().GetResult();
+            var ok = await WebApi.CheckIn(attendance.ProjectId, workerId, attendance.LogDate, attendance.DeviceName);
             if (ok)
             {
                 UploadAttendanceLogSuccess(attendance.Id);
@@ -52,10 +51,9 @@ namespace Attendances.ZKTecoBackendService.Connectors
             }
         }
 
-        public void CheckOutToCTMS(AttendanceLog attendance, string workerId)
+        public async void CheckOutToCTMS(AttendanceLog attendance, string workerId)
         {
-            var ok = WebApi.CheckOut(attendance.ProjectId, workerId, attendance.LogDate).
-                GetAwaiter().GetResult();
+            var ok = await WebApi.CheckOut(attendance.ProjectId, workerId, attendance.LogDate);
             if (ok)
             {
                 UploadAttendanceLogSuccess(attendance.Id);

@@ -6,6 +6,7 @@ using Attendances.ZKTecoBackendService.Models;
 using System.Collections.Generic;
 using System;
 using Newtonsoft.Json;
+using Attendances.ZKTecoBackendService.Errors;
 
 namespace Attendances.ZKTecoBackendService.Handlers
 {
@@ -31,11 +32,11 @@ namespace Attendances.ZKTecoBackendService.Handlers
             AttendanceLog attendance = null;
             try
             {
-                attendance = JsonConvert.DeserializeObject<AttendanceLog>(msg.JsonData);
+                attendance = msg.ConvertFromJSON<AttendanceLog>();
             }
             catch (Exception ex)
             {
-                Logger.ErrorFormat("DeserializeObject error: {@ex}, EventMessage.Data type[{type}] is not supported.", ex, msg.JsonData);
+                Logger.ErrorFormat("DeserializeObject error: {@ex}, EventMessage[{@msg}] is not supported.", ex, msg);
                 return;
             }
 
@@ -45,19 +46,27 @@ namespace Attendances.ZKTecoBackendService.Handlers
                 return;
             }
 
-            var workerId = Bundle.GetCurrentWorkerId(attendance.UserId, attendance.ProjectId);
+            string workerId = null;
+            try
+            {
+                workerId = Bundle.GetCurrentWorkerId(attendance.UserId, attendance.ProjectId);
+            }
+            catch (Exception ex)
+            {
+                throw new FailedHandleException(ex, FailedEventType.NotFoundWorker, HandlerKey, msg);
+            }
+            
             if (workerId == string.Empty)
             {
-                Logger.DebugFormat("Not found the worker id({id}).", attendance.UserId);
-                return;
+                throw new FailedHandleException(string.Format("Not found the worker id({0})", attendance.UserId), FailedEventType.NotFoundWorker, HandlerKey, msg);
             }
 
             switch (attendance.DeviceType)
             {
-                case DeviceType.In:
+                case DeviceType.OnlyIn:
                     CheckIn(attendance, workerId);
                     break;
-                case DeviceType.Out:
+                case DeviceType.OnlyOut:
                     CheckOut(attendance, workerId);
                     break;
                 case DeviceType.InOut:
@@ -112,6 +121,8 @@ namespace Attendances.ZKTecoBackendService.Handlers
         private void CheckInOrCheckOut(AttendanceLog attendance, string workerId)
         {
             var lastAttendance = GetLastAttendanceLog(attendance.UserId, attendance.LogDate);
+            Logger.DebugFormat("Last attendance({@attendance}).", lastAttendance);
+
             AttendanceStatus status = AttendanceStatus.Unknown;
             try
             {

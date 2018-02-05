@@ -1,5 +1,4 @@
 ﻿using Attendances.ZKTecoBackendService.Interfaces;
-using Attendances.ZKTecoBackendService.Utils;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,14 +15,11 @@ namespace Attendances.ZKTecoBackendService.Models
         public ArgumentItem(string id, params ArgumentValuePair[] pairs)
         {
             Id = id;
-            Count = 0;
             Pairs = new List<ArgumentValuePair>(10);
             Pairs.AddRange(pairs);
         }
 
         public string Id { get; set; }
-
-        public int Count { get; set; }
 
         public List<ArgumentValuePair> Pairs { get; set; }
 
@@ -38,22 +34,7 @@ namespace Attendances.ZKTecoBackendService.Models
                 }
                 return found.Value;
             }
-        }
-
-        /// <summary>
-        /// increase try times, when reaching max value, it will return false.
-        /// </summary>
-        /// <returns></returns>
-        public bool IncreaseFailedCount()
-        {
-            ++Count;
-
-            if (GlobalConfig.MaxRetryTimes <= Count)
-            {
-                return false;
-            }
-            return true;
-        }
+        }        
 
         public class ArgumentValuePair
         {

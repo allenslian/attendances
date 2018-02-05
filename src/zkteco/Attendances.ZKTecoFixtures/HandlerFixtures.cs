@@ -48,7 +48,7 @@ namespace Attendances.ZKTecoFixtures
             // No any subscriber to handle the message.
             var db = new SqliteConnector();
             var hub = new EventHub(db);
-            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 12, 11, 30, 1, 1, "gate01", DeviceType.In);
+            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 12, 11, 30, 1, 1, "gate01", DeviceType.OnlyIn);
             hub.PublishAsync(new EventMessage(EventType.AttTransactionEx, attendance)).GetAwaiter().GetResult();
 
             var results = db.QueryScalar(
@@ -69,7 +69,7 @@ namespace Attendances.ZKTecoFixtures
             var hub = new EventHub(bundle.Database);
             hub.Subscribe(EventType.AttTransactionEx, new UploadAttendanceHandler(bundle));
 
-            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 12, 11, 30, 1, 1, "gate01", DeviceType.In);
+            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 12, 11, 30, 1, 1, "gate01", DeviceType.OnlyIn);
             hub.PublishAsync(new EventMessage(EventType.AttTransactionEx, attendance)).GetAwaiter().GetResult();
 
             Thread.Sleep(30000);
@@ -101,7 +101,7 @@ namespace Attendances.ZKTecoFixtures
             var hub = new EventHub(bundle.Database);
             hub.Subscribe(EventType.AttTransactionEx, new UploadAttendanceHandler(bundle));
 
-            var attendance = new AttendanceLog("4", 1, 1, 2018, 1, 13, 16, 11, 30, 1, 1, "gate01", DeviceType.In);
+            var attendance = new AttendanceLog("4", 1, 1, 2018, 1, 13, 16, 11, 30, 1, 1, "gate01", DeviceType.OnlyIn);
             hub.PublishAsync(new EventMessage(EventType.AttTransactionEx, attendance)).GetAwaiter().GetResult();
 
             Thread.Sleep(30000);
@@ -132,23 +132,24 @@ namespace Attendances.ZKTecoFixtures
             var hub = new EventHub(bundle.Database);
             hub.Subscribe(EventType.AttTransactionEx, new UploadAttendanceHandler(bundle));
 
-            var attendance = new AttendanceLog("3", 1, 1, 2018, 1, 14, 12, 11, 30, 1, 1, "gate01", DeviceType.In);
+            var attendance = new AttendanceLog("3", 1, 1, 2018, 1, 14, 12, 11, 30, 1, 1, "gate01", DeviceType.OnlyIn);
             hub.PublishAsync(new EventMessage(EventType.AttTransactionEx, attendance)).GetAwaiter().GetResult();
 
-            Thread.Sleep(30000);
+            Thread.Sleep(15000);
 
             var result = bundle.Database.QueryScalar(
                 "select count(*) from failed_queue;", null);
-            var count = Convert.ToInt32(result);
+            var count = (long)result;
             Assert.IsTrue(count > 0);
 
+            Thread.Sleep(1000);
             result = bundle.Database.QueryScalar(
                 "select count(*) from attendance_logs where id=@id",
                 new Dictionary<string, object>
                 {
                     { "@id", attendance.Id }
                 });
-            count = Convert.ToInt32(result);
+            count = (long)result;
             Assert.IsTrue(count == 0);
         }
 
@@ -161,7 +162,7 @@ namespace Attendances.ZKTecoFixtures
 
             var result = bundle.Database.QueryScalar(
                 "select count(*) from failed_queue where retry_times > 0;", null);
-            var count = Convert.ToInt32(result);
+            var count = (long)result;
             Assert.IsTrue(count > 0);
         }
     }

@@ -72,5 +72,14 @@ namespace Attendances.ZKTecoFixtures
                 GetAwaiter().GetResult();
             Assert.IsFalse(result);
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(WebException))]
+        public void TestRealGetFaceIdAPIFailed()
+        {
+            var api = new Attendances.ZKTecoBackendService.Connectors.WebApiConnector();
+            var worker = api.FindProjectWorkerByFaceId("10", "592e2531b2ddc226f0df2b24").GetAwaiter().GetResult();
+            Assert.AreEqual("", worker);
+        }
     }
 }

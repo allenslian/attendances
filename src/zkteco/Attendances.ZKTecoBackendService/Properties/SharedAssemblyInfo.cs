@@ -10,7 +10,7 @@
 
 [assembly: System.Reflection.AssemblyCompany("Magicsoft Asia Systems Pte Ltd.")]
 [assembly: System.Reflection.AssemblyCopyright("Copyright © Magicsoft-Asia 2018")]
-[assembly: System.Reflection.AssemblyInformationalVersion("1.0.0.524ce28")]
+[assembly: System.Reflection.AssemblyInformationalVersion("1.0.0.743d416")]
 [assembly: System.Reflection.AssemblyVersion("1.0.0")]
 [assembly: System.Reflection.AssemblyFileVersion("1.0.0")]
 

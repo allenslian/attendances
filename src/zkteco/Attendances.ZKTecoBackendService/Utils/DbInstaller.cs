@@ -39,9 +39,8 @@ namespace Attendances.ZKTecoBackendService.Utils
                     Directory.CreateDirectory(dir);
                 }
                 SQLiteConnection.CreateFile(_dbPath);
-            }
-
-            CreateTableStructures(_builder);
+                CreateTableStructures(_builder);
+            }           
         }
 
         private static void CreateTableStructures(SQLiteConnectionStringBuilder builder)
@@ -110,6 +109,8 @@ namespace Attendances.ZKTecoBackendService.Utils
                             refer_id TEXT NOT NULL,
                             message TEXT NOT NULL,
                             retry_times INT NOT NULL,
+                            kind INT NOT NULL DEFAULT 0,
+                            handler TEXT NOT NULL DEFAULT '',
                             create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                         );";
             command.CommandText = sql;

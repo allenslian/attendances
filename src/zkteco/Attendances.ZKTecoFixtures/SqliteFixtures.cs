@@ -48,7 +48,7 @@ namespace Attendances.ZKTecoFixtures
         [TestMethod]
         public void TestCheckInToCTMSSuccess()
         {           
-            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 8, 11, 30, 1, 1, "gate01", DeviceType.In);
+            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 8, 11, 30, 1, 1, "gate01", DeviceType.OnlyIn);
             var bundle = new Bundle(new SqliteConnector(), mock.Object);
             SaveAttendanceLog(bundle, attendance);
             bundle.CheckInToCTMS(attendance, "2222222");
@@ -63,7 +63,7 @@ namespace Attendances.ZKTecoFixtures
         [TestMethod]
         public void TestCheckInToCTMSFailed()
         {           
-            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 12, 11, 30, 1, 1, "gate01", DeviceType.In);
+            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 12, 11, 30, 1, 1, "gate01", DeviceType.OnlyIn);
             var bundle = new Bundle(new SqliteConnector(), mock.Object);
             SaveAttendanceLog(bundle, attendance);
             bundle.CheckInToCTMS(attendance, "2222222");
@@ -78,7 +78,7 @@ namespace Attendances.ZKTecoFixtures
         [TestMethod]
         public void TestCheckOutToCTMSSuccess()
         {
-            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 10, 11, 30, 1, 1, "gate01", DeviceType.Out);
+            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 10, 11, 30, 1, 1, "gate01", DeviceType.OnlyOut);
             var bundle = new Bundle(new SqliteConnector(), mock.Object);
             SaveAttendanceLog(bundle, attendance);
             bundle.CheckOutToCTMS(attendance, "2222222");
@@ -93,7 +93,7 @@ namespace Attendances.ZKTecoFixtures
         [TestMethod]
         public void TestCheckOutToCTMSFailed()
         {
-            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 14, 11, 30, 1, 1, "gate01", DeviceType.Out);
+            var attendance = new AttendanceLog("2", 1, 1, 2018, 1, 13, 14, 11, 30, 1, 1, "gate01", DeviceType.OnlyOut);
             var bundle = new Bundle(new SqliteConnector(), mock.Object);
             SaveAttendanceLog(bundle, attendance);
             bundle.CheckOutToCTMS(attendance, "2222222");

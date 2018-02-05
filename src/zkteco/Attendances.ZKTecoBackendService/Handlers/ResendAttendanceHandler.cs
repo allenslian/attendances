@@ -3,7 +3,6 @@ using Attendances.ZKTecoBackendService.Events;
 using Attendances.ZKTecoBackendService.Interfaces;
 using Attendances.ZKTecoBackendService.Models;
 using Attendances.ZKTecoBackendService.Utils;
-using Newtonsoft.Json;
 using Quartz;
 using System;
 using System.Collections.Generic;
@@ -120,25 +119,8 @@ namespace Attendances.ZKTecoBackendService.Handlers
         {
             var messages = GetFailedQueueMessages();
             foreach (var msg in messages)
-            {
-                var data = JsonConvert.DeserializeObject<ArgumentItem>(msg.JsonData);
-                if (data == null)
-                {
-                    Logger.Debug("ResendFailedMessages Data type is not ArgumentItem.");
-                    continue;
-                }
-
-                EventMessage @event;
-                try
-                {
-                    @event = JsonConvert.DeserializeObject<EventMessage>(data["Message"]);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorFormat("ResendFailedMessages DeserializeObject error:{@ex}", ex);
-                    @event = null;
-                }
-
+            {               
+                var @event = msg.Event;
                 if (@event == null)
                 {
                     Logger.Debug("ResendFailedMessages Message type is not EventMessage.");
@@ -146,7 +128,7 @@ namespace Attendances.ZKTecoBackendService.Handlers
                 }
 
                 Logger.Debug("ResendFailedMessages creates handler instance.");
-                var handler = Activator.CreateInstance(Type.GetType(msg.ReferenceId, false, false), new[] { Bundle }) as IEventHandler;
+                var handler = Activator.CreateInstance(Type.GetType(msg.Handler, false, false), new[] { Bundle }) as IEventHandler;
                 if (handler == null)
                 {
                     Logger.Debug("ResendFailedMessages fails to create Handler instance.");
@@ -162,7 +144,7 @@ namespace Attendances.ZKTecoBackendService.Handlers
                 catch (Exception ex)
                 {
                     Logger.ErrorFormat("ResendFailedMessages error: {@ex}, try {num} times.", ex, msg.RetryTimes);
-                    IncreaseFailedTimes(msg.Id);
+                    IncreaseFailedTimes(msg);
                     continue;
                 }
 
@@ -170,35 +152,41 @@ namespace Attendances.ZKTecoBackendService.Handlers
             }
         }
 
-        private List<EventMessage> GetFailedQueueMessages()
+        private List<FailedMessage> GetFailedQueueMessages()
         {
             var reader = Bundle.Database.QuerySet(
-                @"SELECT id,refer_id,message,create_at,retry_times FROM failed_queue WHERE retry_times<@times;", 
+                @"SELECT id,refer_id,message,create_at,retry_times,kind,handler FROM failed_queue WHERE retry_times<@times ORDER BY create_at ASC;", 
                 new Dictionary<string, object>
                 {
                     { "@times", GlobalConfig.MaxRetryTimes }
                 });
-            var results = new List<EventMessage>();
+            var results = new List<FailedMessage>();
             while (reader.Read())
             {
-                results.Add(new EventMessage(
+                results.Add(new FailedMessage(
                     reader.GetString(0),
+                    (FailedEventType)reader.GetInt32(5),
                     reader.GetString(1),
                     reader.GetString(2),
                     reader.GetDateTime(3),
-                    reader.GetInt32(4)));
+                    reader.GetInt32(4),
+                    reader.GetString(6)));
             }
             return results;
         }
 
-        private void IncreaseFailedTimes(string id)
-        {
-            Logger.DebugFormat("Increase failed message({id}) at one time.", id);
-            Bundle.Database.Execute("UPDATE failed_queue SET retry_times=retry_times+1 WHERE id=@id;",
-                new Dictionary<string, object>
-                {
-                    { "@id", id }
-                });
+        private void IncreaseFailedTimes(FailedMessage msg)
+        {            
+            if (msg.IncreaseFailedCount())
+            {
+                Bundle.Database.Execute("UPDATE failed_queue SET retry_times=@retry_times WHERE id=@id;",
+                    new Dictionary<string, object>
+                    {
+                        { "@id", msg.Id },
+                        { "@retry_times", msg.RetryTimes }
+                    });
+            }
+            Logger.DebugFormat("Increase failed message({id}) at {times} time.", msg.Id, msg.RetryTimes);
         }
 
         private void DestroyFailedMessage(string id)

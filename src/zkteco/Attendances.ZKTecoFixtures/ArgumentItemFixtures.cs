@@ -9,22 +9,25 @@ namespace Attendances.ZKTecoFixtures
     public class ArgumentItemFixtures
     {
         [TestMethod]
-        public void TestIncreaseFailedCount()
+        public void TestFailedMessage()
         {
-            var msg = new EventMessage(EventType.Failed,
-                new AttendanceLog("1", 1, 1, 2018, 1, 13, 8, 0, 0, 1, 1, "gate01", DeviceType.In));
-            var arg = new ArgumentItem("123", new ArgumentItem.ArgumentValuePair("Message", msg));
-            Assert.IsTrue(arg.IncreaseFailedCount());
-            Assert.IsTrue(arg.IncreaseFailedCount());
 
-            var json = JsonConvert.SerializeObject(arg);
-            var newArg = JsonConvert.DeserializeObject<ArgumentItem>(json);
+            var msg = new FailedMessage(
+                FailedEventType.NotFoundWorker, "UploadAttendanceHandler", 
+                new EventMessage(EventType.AttTransactionEx, new AttendanceLog("1", 1, 1, 2018, 1, 13, 8, 0, 0, 1, 1, "gate01", DeviceType.OnlyIn)));            
 
-            Assert.IsTrue(newArg.Count == 2);
-            Assert.IsTrue(newArg.IncreaseFailedCount());
-            Assert.IsTrue(newArg.IncreaseFailedCount());
-            Assert.IsTrue(newArg.Count == 4);
-            Assert.IsFalse(newArg.IncreaseFailedCount());
+            Assert.IsTrue(msg.IncreaseFailedCount());
+            Assert.IsTrue(msg.IncreaseFailedCount());  
+            Assert.IsTrue(msg.RetryTimes == 2);
+            Assert.IsTrue(msg.IncreaseFailedCount());
+            Assert.IsTrue(msg.IncreaseFailedCount());
+            Assert.IsTrue(msg.RetryTimes == 4);
+            Assert.IsFalse(msg.IncreaseFailedCount());
+
+            var json = msg.DataToJSON();
+            Assert.IsNotNull(json);
+            var arg = JsonConvert.DeserializeObject<ArgumentItem>(json);
+            Assert.AreEqual(arg.Id, msg.Data.Id);
         }
 
 
